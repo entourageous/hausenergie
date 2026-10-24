@@ -1,0 +1,49 @@
+name: Daten sammeln
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [rooms, meter]
+
+concurrency:
+  group: data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests cryptography
+      - name: Sensoren oder Zählerstand einlesen
+        if: github.event_name == 'repository_dispatch'
+        env:
+          DATA_PASSPHRASE: ${{ secrets.DATA_PASSPHRASE }}
+          EVENT_TYPE: ${{ github.event.action }}
+          PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: python scripts/ingest_dispatch.py
+      - name: Fox und Daikin abrufen
+        if: github.event_name != 'repository_dispatch'
+        env:
+          DATA_PASSPHRASE: ${{ secrets.DATA_PASSPHRASE }}
+          FOX_API_KEY: ${{ secrets.FOX_API_KEY }}
+          FOX_DEVICE_SN: ${{ secrets.FOX_DEVICE_SN }}
+          DAIKIN_CLIENT_ID: ${{ secrets.DAIKIN_CLIENT_ID }}
+          DAIKIN_CLIENT_SECRET: ${{ secrets.DAIKIN_CLIENT_SECRET }}
+        run: python scripts/collect.py
+      - name: Speichern
+        run: |
+          git config user.name "hausenergie-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "data $(date -u +%Y-%m-%dT%H:%M)"
+          git pull --rebase || true
+          git push
