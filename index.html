@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hausenergie</title>
+<link rel="apple-touch-icon" href="assets/house_day.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;800&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF2EC;--panel:#fff;--ink:#16282C;--ink2:#5B6E73;--line:#D9E1DC;--nav:#fff;
+  --sky1:#BFDDF2;--sky2:#F4F7F3;--sun:#F0A32B;--heat:#2B8C83;--grid:#5E6E80;--bat:#6BA86F;--house:#3C5A4A;--glow:rgba(240,163,43,.4)}
+@media (prefers-color-scheme:dark){:root{--bg:#101A1C;--panel:#182528;--ink:#EEF3F1;--ink2:#93A5A9;--line:#2A3A3E;--nav:#182528}}
+[data-tod="dawn"]{--sky1:#E9A892;--sky2:#FBE6D6;--glow:rgba(245,170,120,.45)}
+[data-tod="dusk"]{--sky1:#4E4474;--sky2:#E8A077;--glow:rgba(240,140,90,.45)}
+[data-tod="night"]{--sky1:#070F1C;--sky2:#17293F;--glow:rgba(140,170,220,.25)}
+*{box-sizing:inherit}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Manrope",ui-sans-serif,system-ui,-apple-system,sans-serif;font-feature-settings:"tnum" 1;line-height:1.4;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;padding:0 14px 96px}
+header{display:flex;justify-content:space-between;align-items:baseline;padding:16px 6px 8px}
+header h1{margin:0;font-size:1.05rem;font-weight:600}
+header .upd{font-size:.8rem;color:var(--ink2)}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:8px 12px;font-weight:600;font-size:.85rem}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.view{display:none}.view.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px}
+.card .k{color:var(--ink2);font-size:.8rem;font-weight:500}
+.card .v{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-top:2px}
+.card .v small{font-size:.8rem;font-weight:600;color:var(--ink2);margin-left:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2 .card{margin:0}
+.scene{border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(var(--sky1),var(--sky2));margin-bottom:10px;box-shadow:0 14px 40px rgba(0,0,0,.14)}
+.scene svg{display:block;width:100%;height:auto}
+.flow{fill:none;stroke-linecap:round;stroke-dasharray:4 16;animation:run 1.1s linear infinite;opacity:.95}
+.flow.off{opacity:.12;animation:none}
+@keyframes run{to{stroke-dashoffset:-20}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+.tag{font-size:20px;font-weight:600;fill:#fff}.tagbg{fill:rgba(20,30,34,.72)}
+.tag.big{font-size:27px;font-weight:800}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;display:flex;margin-top:10px}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:12px;font-size:.78rem;color:var(--ink2);margin-top:8px;flex-wrap:wrap}
+.legend b{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{font-family:inherit;fill:var(--ink2);font-size:10px}
+.seg{display:flex;gap:4px;background:var(--line);padding:3px;border-radius:12px;margin:0 0 10px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink2);font-weight:600;font-size:.85rem;padding:7px;border-radius:9px}
+.seg button.on{background:var(--panel);color:var(--ink)}
+.room{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.room:last-child{border-bottom:0}
+.room h3{margin:0;font-size:.95rem;font-weight:600}.room p{margin:2px 0 0;font-size:.75rem;color:var(--ink2)}
+.room .vals{text-align:right;font-weight:800;font-size:1.05rem}.room .vals small{color:var(--ink2);font-weight:600;font-size:.75rem}
+.room svg{width:70px;height:26px;margin:0 10px}
+label{display:block;font-size:.8rem;color:var(--ink2);margin:10px 0 4px}
+input,textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.hint{font-size:.8rem;color:var(--ink2)}
+.err{background:#FBE7C2;color:#5A3A05;border-radius:12px;padding:10px 12px;font-size:.85rem;margin-bottom:10px}
+@media (prefers-color-scheme:dark){.err{background:#3E3115;color:#FBE7C2}}
+nav{position:fixed;left:0;right:0;bottom:0;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-around;background:var(--nav);border-top:1px solid var(--line)}
+nav button{border:0;background:none;color:var(--ink2);font-size:.7rem;font-weight:600;display:grid;justify-items:center;gap:3px;padding:4px 10px;border-radius:12px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--ink)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal.open{display:flex}
+.modal .card{width:100%;max-width:520px;border-radius:22px 22px 0 0;margin:0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>Hausenergie</h1>
+  <span class="upd" id="upd">lädt …</span>
+</header>
+<div id="errors"></div>
+
+<!-- JETZT -->
+<section class="view active" id="v-now">
+  <div class="scene" id="scene" data-tod="day">
+    <svg viewBox="0 0 1600 1100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Energiefluss am Haus">
+      <defs><radialGradient id="sunglow"><stop offset="0" stop-color="var(--glow)"/><stop offset="1" stop-color="var(--glow)" stop-opacity="0"/></radialGradient></defs>
+      <g id="sun"><circle cx="190" cy="150" r="190" fill="url(#sunglow)"/><circle cx="190" cy="150" r="52" fill="var(--sun)"/></g>
+      <g id="moon" style="display:none"><circle cx="190" cy="150" r="40" fill="#E8EEF5"/><circle cx="208" cy="138" r="34" fill="var(--sky1)"/></g>
+      <image id="house" href="assets/house_day.png" x="0" y="0" width="1600" height="1100"/>
+      <g stroke="var(--grid)" stroke-width="9" stroke-linecap="round"><line x1="235" y1="760" x2="235" y2="470"/><line x1="192" y1="492" x2="278" y2="492"/></g>
+      <path d="M500 702 L770 852 L770 912 L500 762 Z" fill="rgba(20,30,34,.28)" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-dasharray="8 8"/>
+      <path d="M560 758 L585 772 L585 822 L560 808 Z" fill="#F4F4F2"/>
+      <path d="M600 780 L622 792 L622 832 L600 820 Z" fill="var(--bat)" id="batbox"/>
+      <path d="M640 802 L672 820 L672 870 L640 852 Z" fill="#D5DADC"/>
+      <path class="flow" id="f-sun" stroke="var(--sun)" d="M260 160 C 420 150 560 190 690 235"/>
+      <path class="flow" id="f-bat" stroke="var(--bat)" d="M775 440 L775 870"/>
+      <path class="flow" id="f-heat" stroke="var(--heat)" d="M690 840 C 760 620 880 360 960 205"/>
+      <path class="flow" id="f-grid" stroke="var(--grid)" d="M520 745 C 440 740 330 700 250 640"/>
+      <g transform="translate(560 40)"><rect class="tagbg" width="230" height="64" rx="18"/><text class="tag" x="20" y="27">Solar</text><text class="tag big" id="t-pv" x="20" y="54">–</text></g>
+      <g transform="translate(1040 70)"><rect class="tagbg" width="300" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-hp-l">Wärmepumpe</text><text class="tag big" id="t-hp" x="20" y="54">–</text></g>
+      <g transform="translate(560 930)"><rect class="tagbg" width="430" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-bat-l">Keller: Wechselrichter, Batterie</text><text class="tag big" id="t-bat" x="20" y="54">–</text></g>
+      <g transform="translate(60 790)"><rect class="tagbg" width="260" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-grid-l">Netz</text><text class="tag big" id="t-grid" x="20" y="54">–</text></g>
+      <g transform="translate(1180 990)"><rect class="tagbg" width="380" height="64" rx="18"/><text class="tag" x="20" y="27">Haus</text><text class="tag big" id="t-load" x="20" y="54">–</text></g>
+    </svg>
+  </div>
+  <div class="card">
+    <div class="k">Heute</div>
+    <div class="bar" id="bar-today"></div>
+    <div class="legend" id="leg-today"></div>
+  </div>
+  <div class="grid2" id="kpis"></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn primary" id="refresh">Jetzt aktualisieren</button>
+    <button class="btn" id="settings">Einstellungen</button>
+  </div>
+</section>
+
+<!-- VERLAUF -->
+<section class="view" id="v-day">
+  <div class="seg" id="range"><button class="on" data-r="24">24 h</button><button data-r="168">7 Tage</button><button data-r="month">Monat</button></div>
+  <div class="card chart" id="chart-main"></div>
+  <div class="card" id="day-stats"></div>
+</section>
+
+<!-- RÄUME -->
+<section class="view" id="v-rooms">
+  <div class="card" id="rooms-list"><div class="hint">Noch keine Sensordaten. Sobald der Kurzbefehl auf dem Apple TV läuft, erscheinen die Räume hier.</div></div>
+</section>
+
+<!-- ZÄHLER -->
+<section class="view" id="v-meter">
+  <div class="card" id="meter-est"></div>
+  <div class="card">
+    <div class="k" style="font-weight:600;color:var(--ink)">Zählerstand eingeben</div>
+    <label>Datum</label><input type="date" id="m-date">
+    <label>Haushaltszähler, Bezug (kWh)</label><input inputmode="decimal" id="m-house" placeholder="z. B. 12480">
+    <label>Haushaltszähler, Einspeisung (kWh)</label><input inputmode="decimal" id="m-export" placeholder="z. B. 9115">
+    <label>Wärmepumpenzähler (kWh)</label><input inputmode="decimal" id="m-hp" placeholder="z. B. 6742">
+    <label>Notiz</label><input id="m-note" placeholder="optional">
+    <div style="margin-top:12px"><button class="btn primary" id="m-save">Speichern</button> <span class="hint" id="m-msg"></span></div>
+  </div>
+  <div class="card" id="meter-list"></div>
+</section>
+</div>
+
+<nav aria-label="Hauptnavigation">
+  <button class="on" data-v="v-now"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/></svg>Jetzt</button>
+  <button data-v="v-day"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>Verlauf</button>
+  <button data-v="v-rooms"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-6h6v6"/></svg>Räume</button>
+  <button data-v="v-meter"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4"/><path d="M6 15h12"/></svg>Zähler</button>
+</nav>
+
+<div class="modal" id="modal">
+  <div class="card">
+    <div class="k" style="font-weight:600;color:var(--ink);font-size:1rem">Einstellungen</div>
+    <label>Passphrase (entschlüsselt die Daten, bleibt nur auf diesem Gerät)</label><input type="password" id="s-pass">
+    <label>GitHub Repository (owner/name)</label><input id="s-repo" placeholder="alex/hausenergie">
+    <label>GitHub Token (optional, für „Jetzt aktualisieren" und Zählerstände)</label><input type="password" id="s-token" placeholder="github_pat_…">
+    <label>Stromtarif Bezug (€/kWh)</label><input inputmode="decimal" id="s-price" placeholder="0,31">
+    <label>Einspeisevergütung (€/kWh)</label><input inputmode="decimal" id="s-feed" placeholder="0,08">
+    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn primary" id="s-save">Speichern</button><button class="btn" id="s-close">Abbrechen</button></div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------- settings
+const S = {
+  get(k, d=''){ try{ return localStorage.getItem('he:'+k) ?? d }catch(e){ return d } },
+  set(k, v){ try{ localStorage.setItem('he:'+k, v) }catch(e){} }
+};
+const defaultRepo = (() => {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const seg = location.pathname.split('/').filter(Boolean)[0];
+  return m && seg ? `${m[1]}/${seg}` : '';
+})();
+const fmt = (n, d=2) => n == null || isNaN(n) ? '–' : Number(n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
+const kw = v => v == null ? '–' : fmt(Math.abs(v), 2) + ' kW';
+const kwh = v => v == null ? '–' : fmt(v, 1) + ' kWh';
+const eur = v => v == null ? '–' : fmt(v, 2) + ' €';
+const price = () => parseFloat((S.get('price','0.31')).replace(',','.')) || 0;
+const feedTariff = () => parseFloat((S.get('feed','0.08')).replace(',','.')) || 0;
+
+// ---------------------------------------------------------------- crypto (matches scripts/crypto_util.py)
+async function decryptBlob(txt, pass){
+  const d = JSON.parse(txt), b = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b(d.salt), iterations:200000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b(d.iv)}, key, b(d.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function loadEnc(name){
+  const r = await fetch(`data/${name}.enc?t=${Date.now()}`, {cache:'no-store'});
+  if (!r.ok) return null;
+  return decryptBlob(await r.text(), S.get('pass'));
+}
+
+// ---------------------------------------------------------------- state and render
+let latest = {}, history = [], daily = {}, rooms = null, meters = null;
+const $ = id => document.getElementById(id);
+const showErr = msg => { $('errors').innerHTML = msg ? `<div class="err">${msg}</div>` : '' };
+
+function tod(){
+  const h = new Date().getHours();
+  return h >= 6 && h < 9 ? 'dawn' : h >= 9 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'dusk' : 'night';
+}
+function setFlow(id, kw, reverse){
+  const el = $(id);
+  const on = kw != null && Math.abs(kw) > 0.05;
+  el.classList.toggle('off', !on);
+  el.style.strokeWidth = on ? Math.min(14, 4 + Math.abs(kw) * 1.8) : 4;
+  el.style.animationDuration = on ? Math.max(.35, 1.4 - Math.abs(kw) * .15) + 's' : '';
+  el.style.animationDirection = reverse ? 'reverse' : 'normal';
+}
+function renderNow(){
+  const t = tod(); $('scene').dataset.tod = t; $('house').setAttribute('href', `assets/house_${t}.png`);
+  $('sun').style.display = t === 'night' ? 'none' : ''; $('moon').style.display = t === 'night' ? '' : 'none';
+  const f = latest.fox || {};
+  const gridNet = (f.grid_kw || 0) - (f.feedin_kw || 0);          // positive = import
+  const batNet = (f.bat_charge_kw || 0) - (f.bat_discharge_kw || 0); // positive = charging
+  $('t-pv').textContent = kw(f.pv_kw);
+  $('t-load').textContent = kw(f.load_kw);
+  $('t-grid-l').textContent = gridNet >= 0 ? 'Netz, Bezug' : 'Netz, Einspeisung';
+  $('t-grid').textContent = kw(gridNet);
+  $('t-bat-l').textContent = f.soc != null ? `Batterie ${fmt(f.soc,0)} %` : 'Keller: Wechselrichter, Batterie';
+  $('t-bat').textContent = f.soc == null ? '–' : (batNet >= 0 ? 'lädt ' : 'entlädt ') + kw(batNet);
+  $('batbox').setAttribute('d', `M600 ${832 - (f.soc||0)*0.52} L622 ${844 - (f.soc||0)*0.52} L622 832 L600 820 Z`);
+  const hp = (latest.daikin || [])[0]?.points || {};
+  const cc = hp.climateControl || {}, dhw = hp.domesticHotWaterTank || hp.domesticHotWaterFlowThrough || {};
+  const modeDe = {heating:'heizt', cooling:'kühlt', auto:'Auto', off:'aus'};
+  $('t-hp-l').textContent = cc.outdoor_temp != null ? `Wärmepumpe, außen ${fmt(cc.outdoor_temp,1)} °C` : 'Wärmepumpe';
+  $('t-hp').textContent = cc.mode ? `${modeDe[cc.mode] || cc.mode}${cc.leaving_water_temp != null ? ', Vorlauf ' + fmt(cc.leaving_water_temp,0) + ' °C' : ''}` : (latest.daikin ? '–' : 'noch nicht verbunden');
+  setFlow('f-sun', f.pv_kw); setFlow('f-bat', batNet, batNet < 0); setFlow('f-grid', gridNet, gridNet < 0);
+  setFlow('f-heat', cc.on === 'on' && cc.mode !== 'off' ? 1 : 0);
+
+  // today
+  const d = daily[new Date().toISOString().slice(0,10)] || {};
+  const gen = d.generation, feed = d.feedin, imp = d.gridConsumption, load = d.loads;
+  const self = gen != null && feed != null ? Math.max(0, gen - feed) : null;
+  const parts = [[self, 'var(--house)', 'selbst genutzt'], [feed, 'var(--sun)', 'eingespeist']];
+  const tot = (self||0) + (feed||0);
+  $('bar-today').innerHTML = tot ? parts.map(([v,c]) => `<i style="width:${(v||0)/tot*100}%;background:${c}"></i>`).join('') : '';
+  $('leg-today').innerHTML = parts.map(([v,c,l]) => `<span><b style="background:${c}"></b>${l} ${kwh(v)}</span>`).join('') + (imp != null ? `<span><b style="background:var(--grid)"></b>bezogen ${kwh(imp)}</span>` : '');
+  const autarkie = load ? Math.round(100 * Math.max(0, 1 - (imp||0)/load)) : null;
+  const kpis = [
+    ['Autarkie heute', autarkie == null ? '–' : fmt(autarkie,0), '%'],
+    ['Erzeugt heute', gen == null ? '–' : fmt(gen,1), 'kWh'],
+    ['Netzkosten heute', imp == null ? '–' : fmt(imp*price(),2), '€'],
+    ['Einspeisung heute', feed == null ? '–' : fmt(feed*feedTariff(),2), '€'],
+    ['Wärmepumpe heute', d.hp_heating == null && d.hp_dhw == null ? '–' : fmt((d.hp_heating||0)+(d.hp_dhw||0),1), 'kWh'],
+    ['Warmwasser', dhw.tank_temp == null ? '–' : fmt(dhw.tank_temp,0), '°C'],
+  ];
+  $('kpis').innerHTML = kpis.map(([k,v,u]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}<small>${u}</small></div></div>`).join('');
+  const upd = latest.updated ? new Date(latest.updated) : null;
+  $('upd').textContent = upd ? `Stand ${upd.toLocaleString('de-DE', {weekday:'short', hour:'2-digit', minute:'2-digit'})}` : 'keine Daten';
+  showErr((latest.errors||[]).join(' · '));
+}
+
+// ---------------------------------------------------------------- charts
+function lineChart(series, labels, unitRight){
+  // series: [{pts:[[x,y]...], color, area}], x in 0..1
+  const W=360, H=190, L=30, R=unitRight?30:10, T=14, B=24;
+  const ys = series.flatMap(s => s.pts.map(p => p[1])).filter(v => v != null);
+  const ymax = Math.max(1, ...ys) * 1.1;
+  const X = x => L + x*(W-L-R), Y = y => T + (H-T-B)*(1 - y/ymax);
+  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  for (let i=0;i<=3;i++){ const y = T + (H-T-B)*i/3; out += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-dasharray="2 4"/><text x="${L-4}" y="${y+3}" text-anchor="end">${fmt(ymax*(1-i/3),ymax>10?0:1)}</text>`; }
+  for (const s of series){
+    const p = s.pts.filter(q => q[1] != null);
+    if (!p.length) continue;
+    const path = p.map((q,i) => `${i?'L':'M'}${X(q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(' ');
+    if (s.area) out += `<path d="${path} L${X(p[p.length-1][0]).toFixed(1)} ${Y(0)} L${X(p[0][0]).toFixed(1)} ${Y(0)} Z" fill="${s.color}" fill-opacity=".25"/>`;
+    out += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2"/>`;
+  }
+  labels.forEach(([x,l]) => out += `<text x="${X(x)}" y="${H-8}" text-anchor="middle">${l}</text>`);
+  return out + '</svg>';
+}
+function barChart(rows){ // rows: [{label, segs:[[v,color]]}]
+  const W=360, H=200, L=30, T=14, B=26, bw = (W-L-10)/rows.length;
+  const max = Math.max(1, ...rows.map(r => r.segs.reduce((a,s)=>a+(s[0]||0),0))) * 1.1;
+  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  rows.forEach((r,i) => {
+    let y = H-B;
+    r.segs.forEach(([v,c]) => { const h = (v||0)/max*(H-T-B); out += `<rect x="${L+i*bw+1}" y="${y-h}" width="${bw-2}" height="${h}" fill="${c}"/>`; y -= h; });
+    if (rows.length <= 14 || i % 5 === 0) out += `<text x="${L+i*bw+bw/2}" y="${H-8}" text-anchor="middle">${r.label}</text>`;
+  });
+  return out + '</svg>';
+}
+let range = '24';
+function renderDay(){
+  if (range === 'month'){
+    const dates = Object.keys(daily).sort().slice(-31);
+    $('chart-main').innerHTML = `<div class="k" style="margin-bottom:6px">Erzeugung und Verbrauch pro Tag, kWh</div>` + barChart(dates.map(dte => ({label: dte.slice(8), segs: [[Math.max(0,(daily[dte].generation||0)-(daily[dte].feedin||0)),'var(--house)'],[daily[dte].feedin,'var(--sun)'],[daily[dte].gridConsumption,'var(--grid)']]})));
+    const sum = k => dates.reduce((a,dte)=>a+(daily[dte][k]||0),0);
+    $('day-stats').innerHTML = `<div class="legend" style="margin:0 0 10px"><span><b style="background:var(--house)"></b>selbst genutzt</span><span><b style="background:var(--sun)"></b>eingespeist</span><span><b style="background:var(--grid)"></b>Netzbezug</span></div>
+      <div class="grid2"><div class="card"><div class="k">Erzeugt</div><div class="v">${fmt(sum('generation'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzbezug</div><div class="v">${fmt(sum('gridConsumption'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzkosten</div><div class="v">${fmt(sum('gridConsumption')*price(),0)}<small>€</small></div></div><div class="card"><div class="k">Wärmepumpe</div><div class="v">${fmt(sum('hp_heating')+sum('hp_dhw'),0)}<small>kWh</small></div></div></div>`;
+    return;
+  }
+  const hours = parseInt(range), now = Date.now(), from = now - hours*3600e3;
+  const pts = history.filter(h => new Date(h.t).getTime() >= from);
+  const x = h => (new Date(h.t).getTime()-from)/(hours*3600e3);
+  const labels = hours === 24 ? [0,6,12,18,24].map(k => [k/24, new Date(from+k*3600e3).getHours()+' h']) : [0,1,2,3,4,5,6,7].map(k => [k/7, new Date(from+k*86400e3).toLocaleDateString('de-DE',{weekday:'short'})]);
+  $('chart-main').innerHTML = `<div class="k" style="margin-bottom:6px">Leistung, kW</div>` + lineChart([
+    {pts: pts.map(h => [x(h), h.pv_kw]), color:'var(--sun)', area:true},
+    {pts: pts.map(h => [x(h), h.load_kw]), color:'var(--house)'},
+    {pts: pts.map(h => [x(h), (h.grid_kw||0)-(h.feedin_kw||0) > 0 ? h.grid_kw : null]), color:'var(--grid)'},
+  ], labels) + `<div class="legend"><span><b style="background:var(--sun)"></b>Solar</span><span><b style="background:var(--house)"></b>Haus</span><span><b style="background:var(--grid)"></b>Netzbezug</span></div>`;
+  $('day-stats').innerHTML = `<div class="k" style="margin-bottom:6px">Batterie, %</div>` + lineChart([{pts: pts.map(h => [x(h), h.soc]), color:'var(--bat)', area:true}], labels) + (pts.length ? '' : '<div class="hint">Noch keine Verlaufsdaten in diesem Zeitraum.</div>');
+}
+function spark(vals, color){
+  const v = vals.filter(x => x != null); if (v.length < 2) return '';
+  const min = Math.min(...v), max = Math.max(...v), rng = (max-min)||1;
+  const d = vals.map((y,i) => y == null ? '' : `${i?'L':'M'}${(i/(vals.length-1)*70).toFixed(1)} ${(24 - (y-min)/rng*22).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 70 26"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
+}
+function renderRooms(){
+  if (!rooms || !Object.keys(rooms.latest||{}).length) return;
+  const names = Object.keys(rooms.latest).sort((a,b) => a.localeCompare(b,'de'));
+  const hist = (rooms.history||[]).slice(-48);
+  $('rooms-list').innerHTML = names.map(n => { const r = rooms.latest[n];
+    return `<div class="room"><div><h3>${n}</h3><p>${new Date(r.updated).toLocaleString('de-DE',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</p></div>${spark(hist.map(s => (s.r[n]||[])[0]), 'var(--heat)')}<div class="vals">${fmt(r.t,1)} °C<br><small>${fmt(r.h,0)} % rF</small></div></div>`; }).join('');
+}
+function renderMeter(){
+  const rd = (meters?.readings||[]);
+  $('meter-list').innerHTML = rd.length ? `<div class="k" style="margin-bottom:6px">Erfasste Zählerstände</div>` + rd.slice().reverse().map(e => `<div class="room"><div><h3>${new Date(e.t).toLocaleDateString('de-DE')}</h3><p>${e.note||''}</p></div><div class="vals" style="font-size:.9rem">Bezug ${fmt(e.household,0)}<br><small>Einsp. ${fmt(e.export,0)} · WP ${fmt(e.heatpump,0)}</small></div></div>`).join('') : '<div class="hint">Noch keine Zählerstände erfasst.</div>';
+  const last = rd[rd.length-1];
+  if (!last){ $('meter-est').innerHTML = '<div class="k">Schätzung</div><div class="hint">Trag einen ersten Zählerstand ein, dann rechnet die App die Zähler zwischen deinen Ablesungen virtuell weiter.</div>'; return; }
+  const since = Object.keys(daily).filter(dte => dte > last.t);
+  const sum = k => since.reduce((a,dte)=>a+(daily[dte][k]||0),0);
+  const estH = last.household != null ? last.household + sum('gridConsumption') : null;
+  const estE = last.export != null ? last.export + sum('feedin') : null;
+  const estP = last.heatpump != null ? last.heatpump + sum('hp_heating') + sum('hp_dhw') : null;
+  $('meter-est').innerHTML = `<div class="k">Geschätzter Stand heute, zuletzt bestätigt am ${new Date(last.t).toLocaleDateString('de-DE')}</div>
+    <div class="grid2" style="margin-top:8px"><div class="card"><div class="k">Bezug</div><div class="v">${fmt(estH,0)}<small>kWh</small></div></div><div class="card"><div class="k">Einspeisung</div><div class="v">${fmt(estE,0)}<small>kWh</small></div></div><div class="card"><div class="k">Wärmepumpe</div><div class="v">${fmt(estP,0)}<small>kWh</small></div></div><div class="card"><div class="k">Seit Ablesung</div><div class="v">${fmt(sum('gridConsumption')*price(),0)}<small>€ Netz</small></div></div></div>
+    <div class="hint" style="margin-top:8px">Die Schätzung nutzt die Fox Tageswerte (Bezug, Einspeisung) und die Daikin Verbrauchsdaten. Mit jeder Ablesung siehst du, wie genau sie war.</div>`;
+  if (!$('m-house').value && estH) { $('m-house').placeholder = fmt(estH,0); $('m-export').placeholder = fmt(estE,0); $('m-hp').placeholder = fmt(estP,0); }
+}
+
+// ---------------------------------------------------------------- GitHub actions from the page
+async function gh(path, body){
+  const repo = S.get('repo', defaultRepo), tok = S.get('token');
+  if (!repo || !tok) throw new Error('Repository und GitHub Token in den Einstellungen eintragen.');
+  const r = await fetch(`https://api.github.com/repos/${repo}${path}`, {method:'POST', headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if (!r.ok) throw new Error(`GitHub ${r.status}: ${(await r.text()).slice(0,120)}`);
+}
+$('refresh').addEventListener('click', async () => {
+  const b = $('refresh'); b.disabled = true; b.textContent = 'Hole Daten …';
+  try { await gh('/actions/workflows/collect.yml/dispatches', {ref:'main'}); b.textContent = 'Läuft, in ca. 1 Minute neu laden'; setTimeout(loadAll, 75000); }
+  catch(e){ showErr(e.message); b.textContent = 'Jetzt aktualisieren'; b.disabled = false; }
+});
+$('m-save').addEventListener('click', async () => {
+  const p = id => $(id).value.trim().replace(',','.');
+  try {
+    await gh('/dispatches', {event_type:'meter', client_payload:{date: $('m-date').value || new Date().toISOString().slice(0,10), household: p('m-house')||null, export: p('m-export')||null, heatpump: p('m-hp')||null, note: $('m-note').value}});
+    $('m-msg').textContent = 'Gespeichert, erscheint in etwa einer Minute.'; setTimeout(loadAll, 70000);
+  } catch(e){ $('m-msg').textContent = e.message; }
+});
+
+// ---------------------------------------------------------------- settings modal and navigation
+function openSettings(){ $('s-pass').value = S.get('pass'); $('s-repo').value = S.get('repo', defaultRepo); $('s-token').value = S.get('token'); $('s-price').value = S.get('price','0,31'); $('s-feed').value = S.get('feed','0,08'); $('modal').classList.add('open'); }
+$('settings').addEventListener('click', openSettings);
+$('s-close').addEventListener('click', () => $('modal').classList.remove('open'));
+$('s-save').addEventListener('click', () => { S.set('pass', $('s-pass').value); S.set('repo', $('s-repo').value.trim()); S.set('token', $('s-token').value.trim()); S.set('price', $('s-price').value); S.set('feed', $('s-feed').value); $('modal').classList.remove('open'); loadAll(); });
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === b.dataset.v));
+  S.set('tab', b.dataset.v);
+}));
+$('range').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { $('range').querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b)); range = b.dataset.r; renderDay(); }));
+$('m-date').value = new Date().toISOString().slice(0,10);
+
+async function loadAll(){
+  if (!S.get('pass')) { showErr('Bitte zuerst die Passphrase in den Einstellungen eintragen.'); openSettings(); return; }
+  try {
+    const [l, h, d, r, m] = await Promise.all([loadEnc('latest'), loadEnc('history'), loadEnc('daily'), loadEnc('rooms'), loadEnc('meters')]);
+    latest = l || {}; history = h || []; daily = d || {}; rooms = r; meters = m;
+    showErr(l ? '' : 'Noch keine Daten im Repository. Der erste Lauf des Workflows legt sie an.');
+  } catch(e) { showErr('Daten konnten nicht entschlüsselt werden. Stimmt die Passphrase?'); return; }
+  renderNow(); renderDay(); renderRooms(); renderMeter();
+  $('refresh').disabled = false; $('refresh').textContent = 'Jetzt aktualisieren';
+}
+const t0 = S.get('tab'); if (t0) document.querySelector(`nav button[data-v="${t0}"]`)?.click();
+loadAll();
+</script>
+</body>
+</html>
