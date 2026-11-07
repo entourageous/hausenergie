@@ -3,380 +3,470 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Hausenergie</title>
 <link rel="apple-touch-icon" href="assets/house_day.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#EEF2EC;--panel:#fff;--ink:#16282C;--ink2:#5B6E73;--line:#D9E1DC;--nav:#fff;
-  --sky1:#BFDDF2;--sky2:#F4F7F3;--sun:#F0A32B;--heat:#2B8C83;--grid:#5E6E80;--bat:#6BA86F;--house:#3C5A4A;--glow:rgba(240,163,43,.4)}
-@media (prefers-color-scheme:dark){:root{--bg:#101A1C;--panel:#182528;--ink:#EEF3F1;--ink2:#93A5A9;--line:#2A3A3E;--nav:#182528}}
-[data-tod="dawn"]{--sky1:#E9A892;--sky2:#FBE6D6;--glow:rgba(245,170,120,.45)}
-[data-tod="dusk"]{--sky1:#4E4474;--sky2:#E8A077;--glow:rgba(240,140,90,.45)}
-[data-tod="night"]{--sky1:#070F1C;--sky2:#17293F;--glow:rgba(140,170,220,.25)}
+:root{box-sizing:border-box;
+  --bg1:#D8D1C8;--bg2:#EFEBE5;--bg3:#F7F4F0;
+  --ink:#1E1C1A;--ink2:#6B655E;--ink3:#9A938B;
+  --glass:rgba(255,255,255,.42);--glass-b:rgba(255,255,255,.65);--glass-dk:rgba(28,27,25,.55);
+  --dark:#0F100F;--dark2:#1A1B19;--on-dark:#F4F2EE;--on-dark2:rgba(244,242,238,.6);
+  --accent:#9ED36E;--accent2:#C9E7A5;--sun:#E7B65A;--grid:#8E9AA6;--heat:#7BC7B2;
+  --line:rgba(30,28,26,.10);--shadow:0 20px 50px rgba(40,30,20,.14)}
+@media (prefers-color-scheme:dark){:root{
+  --bg1:#1A1816;--bg2:#2A2724;--bg3:#34302C;
+  --ink:#F1EDE7;--ink2:#A89F95;--ink3:#7C746B;
+  --glass:rgba(255,255,255,.07);--glass-b:rgba(255,255,255,.14);--glass-dk:rgba(10,10,9,.6);
+  --dark:#0A0A0A;--dark2:#151514;
+  --line:rgba(255,255,255,.08);--shadow:0 20px 50px rgba(0,0,0,.45)}}
 *{box-sizing:inherit}
-html{height:100%}
-body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Manrope",ui-sans-serif,system-ui,-apple-system,sans-serif;font-feature-settings:"tnum" 1;line-height:1.4;-webkit-font-smoothing:antialiased}
-.app{max-width:520px;margin:0 auto;padding:0 14px 96px}
-header{display:flex;justify-content:space-between;align-items:baseline;padding:16px 6px 8px}
-header h1{margin:0;font-size:1.05rem;font-weight:600}
-header .upd{font-size:.8rem;color:var(--ink2)}
-button{font:inherit;cursor:pointer}
-.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:8px 12px;font-weight:600;font-size:.85rem}
-.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn:disabled{opacity:.5;cursor:default}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);background:radial-gradient(120% 70% at 50% 0%,var(--bg3) 0%,var(--bg2) 45%,var(--bg1) 100%) fixed;
+  font-family:"Outfit",ui-sans-serif,system-ui,-apple-system,sans-serif;font-weight:300;line-height:1.35;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+button{font:inherit;cursor:pointer;color:inherit}
 .view{display:none}.view.active{display:block}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:10px}
-.card .k{color:var(--ink2);font-size:.8rem;font-weight:500}
-.card .v{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-top:2px}
-.card .v small{font-size:.8rem;font-weight:600;color:var(--ink2);margin-left:3px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid2 .card{margin:0}
-.scene{border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(var(--sky1),var(--sky2));margin-bottom:10px;box-shadow:0 14px 40px rgba(0,0,0,.14)}
-.scene svg{display:block;width:100%;height:auto}
-.flow{fill:none;stroke-linecap:round;stroke-dasharray:4 16;animation:run 1.1s linear infinite;opacity:.95}
-.flow.off{opacity:.12;animation:none}
-@keyframes run{to{stroke-dashoffset:-20}}
-@media (prefers-reduced-motion:reduce){.flow{animation:none}}
-.tag{font-size:20px;font-weight:600;fill:#fff}.tagbg{fill:rgba(20,30,34,.72)}
-.tag.big{font-size:27px;font-weight:800}
-.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;display:flex;margin-top:10px}
-.bar i{display:block;height:100%}
-.legend{display:flex;gap:12px;font-size:.78rem;color:var(--ink2);margin-top:8px;flex-wrap:wrap}
-.legend b{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
-.chart svg{width:100%;height:auto;display:block}
-.chart text{font-family:inherit;fill:var(--ink2);font-size:10px}
-.seg{display:flex;gap:4px;background:var(--line);padding:3px;border-radius:12px;margin:0 0 10px}
-.seg button{flex:1;border:0;background:transparent;color:var(--ink2);font-weight:600;font-size:.85rem;padding:7px;border-radius:9px}
-.seg button.on{background:var(--panel);color:var(--ink)}
-.room{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
-.room:last-child{border-bottom:0}
-.room h3{margin:0;font-size:.95rem;font-weight:600}.room p{margin:2px 0 0;font-size:.75rem;color:var(--ink2)}
-.room .vals{text-align:right;font-weight:800;font-size:1.05rem}.room .vals small{color:var(--ink2);font-weight:600;font-size:.75rem}
-.room svg{width:70px;height:26px;margin:0 10px}
-label{display:block;font-size:.8rem;color:var(--ink2);margin:10px 0 4px}
-input,textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.app{max-width:560px;margin:0 auto;padding:0 14px calc(90px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- header ---------- */
+.top{display:flex;justify-content:space-between;align-items:center;padding:calc(14px + env(safe-area-inset-top,0px)) 4px 6px}
+.top h1{margin:0;font-weight:400;font-size:1.05rem;letter-spacing:.01em}
+.top .greet{font-weight:200;font-size:1.6rem;letter-spacing:-.01em;line-height:1.1;margin-top:2px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ink2);padding:6px 12px;border-radius:999px;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-b)}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.live.stale::before{background:var(--sun);box-shadow:0 0 8px var(--sun)}
+
+/* ---------- stage ---------- */
+.stage{position:relative;aspect-ratio:1600/1180;margin:4px -6px 8px}
+.stage canvas,.stage img{position:absolute;inset:0;width:100%;height:100%}
+.stage img{object-fit:contain;transition:opacity 1.2s;filter:drop-shadow(0 40px 50px rgba(40,30,20,.25))}
+@media (prefers-color-scheme:dark){.stage img{filter:drop-shadow(0 40px 60px rgba(0,0,0,.6))}}
+.stage .fade{opacity:0}
+.pill{position:absolute;transform:translate(-50%,-50%);max-width:62%;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px;padding:7px 12px 7px 7px;border-radius:999px;
+  background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 8px 24px rgba(40,30,20,.12);white-space:nowrap;font-size:.74rem;color:var(--ink2)}
+.pill b{font-weight:500;color:var(--ink)}
+.pill i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--glass-dk);color:#fff;font-style:normal}
+.pill i svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pill.dim{opacity:.55}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:10px}
+.g2{grid-template-columns:1fr 1fr}
+.card{border-radius:22px;padding:16px 16px 14px;position:relative;min-width:0;background:var(--glass);border:1px solid var(--glass-b);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow)}
+.card.dark{background:var(--dark);color:var(--on-dark);border-color:rgba(255,255,255,.06)}
+.card.dark .k,.card.dark .sub{color:var(--on-dark2)}
+.card .k{font-size:.8rem;color:var(--ink2);font-weight:400;display:flex;align-items:center;gap:8px}
+.card .k i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);font-style:normal}
+.card .k i svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card .num{font-weight:200;font-size:2.9rem;letter-spacing:-.03em;line-height:1;margin-top:10px}
+.card .num small{font-size:.9rem;font-weight:300;margin-left:4px;color:var(--ink2)}
+.card.dark .num small{color:var(--on-dark2)}
+.card .mid{font-weight:300;font-size:1.7rem;letter-spacing:-.02em;line-height:1}
+.card .mid small{font-size:.8rem;margin-left:3px;color:var(--ink2)}
+.card .sub{font-size:.78rem;color:var(--ink2);margin-top:6px}
+.card .sub b{font-weight:500;color:var(--ink)}
+.card.dark .sub b{color:var(--on-dark)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;padding:4px 10px;border-radius:999px;background:rgba(158,211,110,.16);color:#5F8F3C;font-weight:400}
+.card.dark .chip{color:var(--accent)}
+.chip.neg{background:rgba(231,182,90,.18);color:#9A6A12}
+.card.dark .chip.neg{color:var(--sun)}
+
+/* arc gauge, Domus style */
+.arc{display:grid;place-items:center;position:relative}
+.arc svg{width:100%;max-width:230px;height:auto;display:block;overflow:visible}
+.arc .val{position:absolute;top:58%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.arc .val .n{font-weight:200;font-size:3.2rem;letter-spacing:-.03em;line-height:1}
+.arc .val .n small{font-size:1rem;font-weight:300;margin-left:2px}
+.arc .val .l{font-size:.78rem;color:var(--ink2);margin-top:4px}
+.card.dark .arc .val .l{color:var(--on-dark2)}
+
+/* stepped chart */
+.step svg{width:100%;height:auto;display:block;overflow:visible}
+.step text{font-family:inherit;fill:var(--on-dark2);font-size:9px;font-weight:300}
+.ring{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.ring svg{width:84px;height:84px}
+.ring .bg{fill:none;stroke:rgba(255,255,255,.1);stroke-width:7}
+.ring .fg{fill:none;stroke:var(--accent);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(158,211,110,.6));transition:stroke-dasharray 1.2s cubic-bezier(.2,.8,.2,1)}
+.stack{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;display:flex;margin:12px 0 8px}
+.stack i{display:block;height:100%}
+.keys{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;font-size:.74rem;color:var(--on-dark2)}
+.keys span b{color:var(--on-dark);font-weight:400;margin-left:4px}
+.keys span::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c);margin-right:7px}
+.list .row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.list .row:last-child{border-bottom:0}
+.list h3{margin:0;font-weight:400;font-size:.95rem}.list p{margin:2px 0 0;font-size:.72rem;color:var(--ink2)}
+.list .v{text-align:right;font-weight:300;font-size:1.3rem;letter-spacing:-.02em}.list .v small{color:var(--ink2);font-size:.72rem}
+.list svg{width:72px;height:28px}
+.actions{display:flex;gap:8px;margin-top:4px}
+.btn{border:1px solid var(--glass-b);background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:999px;padding:11px 18px;font-weight:400;font-size:.88rem}
+.btn.primary{background:var(--dark);color:var(--on-dark);border-color:var(--dark)}
+.btn:disabled{opacity:.5;cursor:default}
+.note{background:var(--glass);border:1px solid var(--sun);border-radius:16px;padding:10px 14px;font-size:.82rem;margin-bottom:10px}
 .hint{font-size:.8rem;color:var(--ink2)}
-.err{background:#FBE7C2;color:#5A3A05;border-radius:12px;padding:10px 12px;font-size:.85rem;margin-bottom:10px}
-@media (prefers-color-scheme:dark){.err{background:#3E3115;color:#FBE7C2}}
-nav{position:fixed;left:0;right:0;bottom:0;padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-around;background:var(--nav);border-top:1px solid var(--line)}
-nav button{border:0;background:none;color:var(--ink2);font-size:.7rem;font-weight:600;display:grid;justify-items:center;gap:3px;padding:4px 10px;border-radius:12px}
-nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-nav button.on{color:var(--ink)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+h2{margin:0 0 4px;font-weight:200;font-size:1.7rem;letter-spacing:-.02em}
+.seg{display:flex;gap:3px;background:var(--glass);border:1px solid var(--glass-b);padding:3px;border-radius:999px;margin:8px 0 12px}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink2);font-weight:400;font-size:.82rem;padding:8px;border-radius:999px}
+.seg button.on{background:var(--dark);color:var(--on-dark)}
+label{display:block;font-size:.78rem;color:var(--ink2);margin:12px 0 5px}
+input{width:100%;font:inherit;font-weight:300;padding:11px 14px;border:1px solid var(--glass-b);border-radius:14px;background:var(--glass);color:var(--ink)}
+input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:4px;padding:6px;border-radius:999px;background:var(--glass-dk);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:5}
+nav button{border:0;background:transparent;color:rgba(255,255,255,.6);font-size:.78rem;font-weight:400;display:flex;align-items:center;gap:7px;padding:10px 14px;border-radius:999px}
+nav button svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{background:rgba(255,255,255,.92);color:#111}
+nav button:not(.on) span{display:none}
+.modal{position:fixed;inset:0;background:rgba(20,18,16,.5);display:none;align-items:flex-end;justify-content:center;z-index:20;backdrop-filter:blur(6px)}
 .modal.open{display:flex}
-.modal .card{width:100%;max-width:520px;border-radius:22px 22px 0 0;margin:0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px))}
+.modal .card{width:100%;max-width:560px;border-radius:26px 26px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom,0px));background:var(--bg2);backdrop-filter:none}
+@media (prefers-reduced-motion:reduce){.ring .fg{transition:none}}
 </style>
 </head>
 <body>
 <div class="app">
-<header>
-  <h1>Hausenergie</h1>
-  <span class="upd" id="upd">lädt …</span>
-</header>
-<div id="errors"></div>
 
-<!-- JETZT -->
+<!-- ================= JETZT ================= -->
 <section class="view active" id="v-now">
-  <div class="scene" id="scene" data-tod="day">
-    <svg viewBox="0 0 1600 1100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="Energiefluss am Haus">
-      <defs><radialGradient id="sunglow"><stop offset="0" stop-color="var(--glow)"/><stop offset="1" stop-color="var(--glow)" stop-opacity="0"/></radialGradient></defs>
-      <g id="sun"><circle cx="190" cy="150" r="190" fill="url(#sunglow)"/><circle cx="190" cy="150" r="52" fill="var(--sun)"/></g>
-      <g id="moon" style="display:none"><circle cx="190" cy="150" r="40" fill="#E8EEF5"/><circle cx="208" cy="138" r="34" fill="var(--sky1)"/></g>
-      <image id="house" href="assets/house_day.png" x="0" y="0" width="1600" height="1100"/>
-      <g stroke="var(--grid)" stroke-width="9" stroke-linecap="round"><line x1="235" y1="760" x2="235" y2="470"/><line x1="192" y1="492" x2="278" y2="492"/></g>
-      <path d="M500 702 L770 852 L770 912 L500 762 Z" fill="rgba(20,30,34,.28)" stroke="rgba(255,255,255,.7)" stroke-width="2" stroke-dasharray="8 8"/>
-      <path d="M560 758 L585 772 L585 822 L560 808 Z" fill="#F4F4F2"/>
-      <path d="M600 780 L622 792 L622 832 L600 820 Z" fill="var(--bat)" id="batbox"/>
-      <path d="M640 802 L672 820 L672 870 L640 852 Z" fill="#D5DADC"/>
-      <path class="flow" id="f-sun" stroke="var(--sun)" d="M260 160 C 420 150 560 190 690 235"/>
-      <path class="flow" id="f-bat" stroke="var(--bat)" d="M775 440 L775 870"/>
-      <path class="flow" id="f-heat" stroke="var(--heat)" d="M690 840 C 760 620 880 360 960 205"/>
-      <path class="flow" id="f-grid" stroke="var(--grid)" d="M520 745 C 440 740 330 700 250 640"/>
-      <g transform="translate(560 40)"><rect class="tagbg" width="230" height="64" rx="18"/><text class="tag" x="20" y="27">Solar</text><text class="tag big" id="t-pv" x="20" y="54">–</text></g>
-      <g transform="translate(1040 70)"><rect class="tagbg" width="300" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-hp-l">Wärmepumpe</text><text class="tag big" id="t-hp" x="20" y="54">–</text></g>
-      <g transform="translate(560 930)"><rect class="tagbg" width="430" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-bat-l">Keller: Wechselrichter, Batterie</text><text class="tag big" id="t-bat" x="20" y="54">–</text></g>
-      <g transform="translate(60 790)"><rect class="tagbg" width="260" height="64" rx="18"/><text class="tag" x="20" y="27" id="t-grid-l">Netz</text><text class="tag big" id="t-grid" x="20" y="54">–</text></g>
-      <g transform="translate(1180 990)"><rect class="tagbg" width="380" height="64" rx="18"/><text class="tag" x="20" y="27">Haus</text><text class="tag big" id="t-load" x="20" y="54">–</text></g>
-    </svg>
+  <div class="top"><div><h1>Hausenergie</h1><div class="greet" id="greet">Guten Abend</div></div><span class="live" id="upd">lädt …</span></div>
+
+  <div class="stage" id="stage">
+    <img id="h-dawn" src="assets/house_dawn.png" alt="" class="fade">
+    <img id="h-day" src="assets/house_day.png" alt="">
+    <img id="h-dusk" src="assets/house_dusk.png" alt="" class="fade">
+    <img id="h-night" src="assets/house_night.png" alt="" class="fade">
+    <canvas id="flow"></canvas>
+    <div class="pill" id="p-pv" style="left:40%;top:9%"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg></i>Solar <b id="t-pv">–</b></div>
+    <div class="pill" id="p-hp" style="left:72%;top:24%"><i><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg></i>Wärmepumpe <b id="t-hp">–</b></div>
+    <div class="pill" id="p-grid" style="left:22%;top:72%"><i><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></i><span id="t-grid-l">Netz</span> <b id="t-grid">–</b></div>
+    <div class="pill" id="p-bat" style="left:38%;top:90%"><i><svg viewBox="0 0 24 24"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10v4"/></svg></i>Batterie <b id="t-bat">–</b></div>
+    <div class="pill" id="p-load" style="left:78%;top:86%"><i><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg></i>Haus <b id="t-load">–</b></div>
   </div>
-  <div class="card">
-    <div class="k">Heute</div>
-    <div class="bar" id="bar-today"></div>
-    <div class="legend" id="leg-today"></div>
+
+  <div id="errors"></div>
+
+  <div class="grid g2">
+    <div class="card dark">
+      <div class="k"><i><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/></svg></i>Verbrauch</div>
+      <div class="num" id="n-load">–<small>kWh</small></div>
+      <div style="margin-top:8px"><span class="chip" id="c-load">–</span></div>
+      <div class="step" id="step-load" style="margin-top:12px"></div>
+    </div>
+    <div class="card arc">
+      <svg viewBox="0 0 200 130" id="arc-svg"></svg>
+      <div class="val"><div class="n" id="a-aut">–<small>%</small></div><div class="l">Autarkie heute</div></div>
+    </div>
   </div>
-  <div class="grid2" id="kpis"></div>
-  <div style="display:flex;gap:8px;margin-top:12px">
-    <button class="btn primary" id="refresh">Jetzt aktualisieren</button>
-    <button class="btn" id="settings">Einstellungen</button>
+
+  <div class="grid g2" style="margin-top:10px">
+    <div class="card">
+      <div class="k"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg></i>Solar heute</div>
+      <div class="mid" style="margin-top:10px" id="m-gen">–<small>kWh</small></div>
+      <div class="sub" id="s-gen">–</div>
+    </div>
+    <div class="card">
+      <div class="k"><i><svg viewBox="0 0 24 24"><path d="M12 2v6M12 22v-6M4 12h6M14 12h6"/><circle cx="12" cy="12" r="3"/></svg></i>Kosten heute</div>
+      <div class="mid" style="margin-top:10px" id="m-cost">–<small>€</small></div>
+      <div class="sub" id="s-cost">–</div>
+    </div>
   </div>
+
+  <div class="card dark" style="margin-top:10px">
+    <div class="ring">
+      <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="r-soc" cx="50" cy="50" r="42" transform="rotate(-90 50 50)" stroke-dasharray="0 264"/><text x="50" y="55" text-anchor="middle" style="font-size:20px;font-weight:200;fill:var(--on-dark)" id="r-soc-t">–</text></svg>
+      <div><div class="k">Speicher</div><div class="mid" style="margin-top:6px" id="m-bat">–</div><div class="sub" id="s-bat">–</div></div>
+    </div>
+    <div class="stack" id="stack"></div>
+    <div class="keys" id="keys"></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:10px">
+    <div class="card">
+      <div class="k"><i><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg></i>Wärmepumpe</div>
+      <div class="mid" style="margin-top:10px" id="m-hp">–</div>
+      <div class="sub" id="s-hp">–</div>
+    </div>
+    <div class="card">
+      <div class="k"><i><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5"/></svg></i>Letzte 14 Tage</div>
+      <div class="mid" style="margin-top:10px" id="m-14">–<small>kWh Ø</small></div>
+      <div class="step light" id="bars14" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="actions"><button class="btn primary" id="refresh">Jetzt aktualisieren</button><button class="btn" id="settings">Einstellungen</button></div>
+  <div class="hint" id="status" style="margin:10px 6px 0"></div>
 </section>
 
-<!-- VERLAUF -->
+<!-- ================= VERLAUF ================= -->
 <section class="view" id="v-day">
-  <div class="seg" id="range"><button class="on" data-r="24">24 h</button><button data-r="168">7 Tage</button><button data-r="month">Monat</button></div>
-  <div class="card chart" id="chart-main"></div>
-  <div class="card" id="day-stats"></div>
+  <div class="top"><h2 style="margin-top:4px">Verlauf</h2></div>
+  <div class="seg" id="range"><button class="on" data-r="24">24 Stunden</button><button data-r="168">7 Tage</button><button data-r="month">Monat</button></div>
+  <div class="card dark step" id="chart-main"></div>
+  <div class="card step" id="chart-2" style="margin-top:10px"></div>
+  <div id="day-stats" style="margin-top:10px"></div>
 </section>
 
-<!-- RÄUME -->
+<!-- ================= RÄUME ================= -->
 <section class="view" id="v-rooms">
-  <div class="card" id="rooms-list"><div class="hint">Noch keine Sensordaten. Sobald der Kurzbefehl auf dem Apple TV läuft, erscheinen die Räume hier.</div></div>
+  <div class="top"><h2 style="margin-top:4px">Räume</h2></div>
+  <div class="card list" id="rooms-list"><div class="hint">Noch keine Sensordaten. Sobald der Kurzbefehl auf dem Apple TV läuft, erscheinen die Räume hier mit Temperatur, Luftfeuchte und Verlauf.</div></div>
 </section>
 
-<!-- ZÄHLER -->
+<!-- ================= ZÄHLER ================= -->
 <section class="view" id="v-meter">
-  <div class="card" id="meter-est"></div>
-  <div class="card">
-    <div class="k" style="font-weight:600;color:var(--ink)">Zählerstand eingeben</div>
+  <div class="top"><h2 style="margin-top:4px">Zähler</h2></div>
+  <div class="card dark" id="meter-est"></div>
+  <div class="card" style="margin-top:10px">
+    <div class="k">Zählerstand eingeben</div>
     <label>Datum</label><input type="date" id="m-date">
-    <label>Haushaltszähler, Bezug (kWh)</label><input inputmode="decimal" id="m-house" placeholder="z. B. 12480">
-    <label>Haushaltszähler, Einspeisung (kWh)</label><input inputmode="decimal" id="m-export" placeholder="z. B. 9115">
-    <label>Wärmepumpenzähler (kWh)</label><input inputmode="decimal" id="m-hp" placeholder="z. B. 6742">
+    <label>Haushaltszähler, Bezug (kWh)</label><input inputmode="decimal" id="m-house">
+    <label>Haushaltszähler, Einspeisung (kWh)</label><input inputmode="decimal" id="m-export">
+    <label>Wärmepumpenzähler (kWh)</label><input inputmode="decimal" id="m-hp">
     <label>Notiz</label><input id="m-note" placeholder="optional">
-    <div style="margin-top:12px"><button class="btn primary" id="m-save">Speichern</button> <span class="hint" id="m-msg"></span></div>
+    <div style="margin-top:14px;display:flex;gap:10px;align-items:center"><button class="btn primary" id="m-save">Speichern</button><span class="hint" id="m-msg"></span></div>
   </div>
-  <div class="card" id="meter-list"></div>
+  <div class="card list" id="meter-list" style="margin-top:10px"></div>
 </section>
 </div>
 
 <nav aria-label="Hauptnavigation">
-  <button class="on" data-v="v-now"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="5"/></svg>Jetzt</button>
-  <button data-v="v-day"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5"/><path d="M3 21h18"/></svg>Verlauf</button>
-  <button data-v="v-rooms"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-6h6v6"/></svg>Räume</button>
-  <button data-v="v-meter"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4"/><path d="M6 15h12"/></svg>Zähler</button>
+  <button class="on" data-v="v-now"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg><span>Jetzt</span></button>
+  <button data-v="v-day"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5"/></svg><span>Verlauf</span></button>
+  <button data-v="v-rooms"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg><span>Räume</span></button>
+  <button data-v="v-meter"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-4"/></svg><span>Zähler</span></button>
 </nav>
 
-<div class="modal" id="modal">
-  <div class="card">
-    <div class="k" style="font-weight:600;color:var(--ink);font-size:1rem">Einstellungen</div>
-    <label>Passphrase (entschlüsselt die Daten, bleibt nur auf diesem Gerät)</label><input type="password" id="s-pass">
-    <label>GitHub Repository (owner/name)</label><input id="s-repo" placeholder="alex/hausenergie">
-    <label>GitHub Token (optional, für „Jetzt aktualisieren" und Zählerstände)</label><input type="password" id="s-token" placeholder="github_pat_…">
-    <label>Stromtarif Bezug (€/kWh)</label><input inputmode="decimal" id="s-price" placeholder="0,31">
-    <label>Einspeisevergütung (€/kWh)</label><input inputmode="decimal" id="s-feed" placeholder="0,08">
-    <div style="display:flex;gap:8px;margin-top:14px"><button class="btn primary" id="s-save">Speichern</button><button class="btn" id="s-close">Abbrechen</button></div>
-  </div>
-</div>
+<div class="modal" id="modal"><div class="card">
+  <h2 style="font-size:1.3rem">Einstellungen</h2>
+  <label>Passphrase (entschlüsselt die Daten, bleibt nur auf diesem Gerät)</label><input type="password" id="s-pass">
+  <label>GitHub Repository (owner/name)</label><input id="s-repo" placeholder="entourageous/hausenergie">
+  <label>GitHub Token (für „Jetzt aktualisieren" und Zählerstände)</label><input type="password" id="s-token" placeholder="github_pat_…">
+  <label>Stromtarif Bezug (€/kWh)</label><input inputmode="decimal" id="s-price" placeholder="0,31">
+  <label>Einspeisevergütung (€/kWh)</label><input inputmode="decimal" id="s-feed" placeholder="0,08">
+  <label>Batteriekapazität (kWh)</label><input inputmode="decimal" id="s-cap" placeholder="10">
+  <label>Dein Name (für die Begrüßung)</label><input id="s-name" placeholder="Alex">
+  <label>Standort (Breite, Länge)</label><input id="s-geo" placeholder="51.22, 6.78">
+  <div style="display:flex;gap:8px;margin-top:16px"><button class="btn primary" id="s-save">Speichern</button><button class="btn" id="s-close">Abbrechen</button></div>
+</div></div>
 
 <script>
-// ---------------------------------------------------------------- settings
-const S = {
-  get(k, d=''){ try{ return localStorage.getItem('he:'+k) ?? d }catch(e){ return d } },
-  set(k, v){ try{ localStorage.setItem('he:'+k, v) }catch(e){} }
-};
-const defaultRepo = (() => {
-  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
-  const seg = location.pathname.split('/').filter(Boolean)[0];
-  return m && seg ? `${m[1]}/${seg}` : '';
-})();
+// ================================================================ helpers
+const S = { get(k, d=''){ try{ return localStorage.getItem('he:'+k) ?? d }catch(e){ return d } }, set(k, v){ try{ localStorage.setItem('he:'+k, v) }catch(e){} } };
+const defaultRepo = (() => { const m = location.hostname.match(/^([^.]+)\.github\.io$/); const seg = location.pathname.split('/').filter(Boolean)[0]; return m && seg ? `${m[1]}/${seg}` : ''; })();
+const $ = id => document.getElementById(id);
 const fmt = (n, d=2) => n == null || isNaN(n) ? '–' : Number(n).toLocaleString('de-DE', {minimumFractionDigits:d, maximumFractionDigits:d});
-const kw = v => v == null ? '–' : fmt(Math.abs(v), 2) + ' kW';
-const kwh = v => v == null ? '–' : fmt(v, 1) + ' kWh';
-const eur = v => v == null ? '–' : fmt(v, 2) + ' €';
-const price = () => parseFloat((S.get('price','0.31')).replace(',','.')) || 0;
-const feedTariff = () => parseFloat((S.get('feed','0.08')).replace(',','.')) || 0;
+const numS = k => parseFloat((S.get(k,'')).replace(',','.'));
+const price = () => numS('price') || 0.31, feedT = () => numS('feed') || 0.08, cap = () => numS('cap') || 10;
+const geo = () => { const m = S.get('geo','51.22, 6.78').split(/[,; ]+/).map(parseFloat); return m.length >= 2 && !isNaN(m[0]) ? m : [51.22, 6.78]; };
+const today = () => new Date().toLocaleDateString('sv-SE');
+const clamp = (x,a,b) => Math.min(b, Math.max(a,x));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ---------------------------------------------------------------- crypto (matches scripts/crypto_util.py)
 async function decryptBlob(txt, pass){
   const d = JSON.parse(txt), b = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
   const key = await crypto.subtle.deriveKey({name:'PBKDF2', salt:b(d.salt), iterations:200000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['decrypt']);
-  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b(d.iv)}, key, b(d.ct));
-  return JSON.parse(new TextDecoder().decode(pt));
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM', iv:b(d.iv)}, key, b(d.ct))));
 }
-async function loadEnc(name){
-  const r = await fetch(`data/${name}.enc?t=${Date.now()}`, {cache:'no-store'});
-  if (!r.ok) return null;
-  return decryptBlob(await r.text(), S.get('pass'));
+async function loadEnc(name){ const r = await fetch(`data/${name}.enc?t=${Date.now()}`, {cache:'no-store'}); return r.ok ? decryptBlob(await r.text(), S.get('pass')) : null; }
+
+// sun elevation decides which still is shown
+function sunEl(date, lat, lon){
+  const rad = Math.PI/180, d = (date - new Date(Date.UTC(date.getUTCFullYear(),0,0)))/86400000;
+  const g = rad*(357.529 + 0.98560028*d), q = 280.459 + 0.98564736*d, L = rad*(q + 1.915*Math.sin(g) + 0.020*Math.sin(2*g)), e = rad*(23.439 - 0.00000036*d);
+  const RA = Math.atan2(Math.cos(e)*Math.sin(L), Math.cos(L)), dec = Math.asin(Math.sin(e)*Math.sin(L));
+  const GMST = (6.697375 + 0.0657098242*d + date.getUTCHours() + date.getUTCMinutes()/60)*15, H = rad*((GMST + lon) % 360) - RA, la = rad*lat;
+  return {el: Math.asin(Math.sin(la)*Math.sin(dec) + Math.cos(la)*Math.cos(dec)*Math.cos(H))/rad, az: ((Math.atan2(-Math.sin(H), Math.cos(la)*Math.tan(dec) - Math.sin(la)*Math.cos(H))/rad)+360)%360};
+}
+function pickStill(){ const [lat,lon] = geo(), p = sunEl(new Date(), lat, lon); const w = p.el < -8 ? 'night' : p.el < 6 ? (p.az > 180 ? 'dusk' : 'dawn') : 'day'; ['dawn','day','dusk','night'].forEach(k => $('h-'+k).classList.toggle('fade', k !== w)); return p; }
+
+// ================================================================ particles (stage space 1600 x 1180), sage, subtle
+const PATHS = { sun:[[300,170],[420,160],[560,220],[700,300]], bat:[[775,520],[775,650],[775,780],[775,950]], heat:[[690,920],[760,700],[880,440],[985,290]], grid:[[515,825],[440,820],[330,780],[250,720]] };
+const COLORS = { sun:[231,182,90], bat:[158,211,110], heat:[123,199,178], grid:[142,154,166] };
+const flows = {sun:0, bat:0, heat:0, grid:0}, dir = {sun:1, bat:1, heat:1, grid:1}, particles = [];
+const bez = (P,t) => { const u=1-t; return [0,1].map(i => u*u*u*P[0][i] + 3*u*u*t*P[1][i] + 3*u*t*t*P[2][i] + t*t*t*P[3][i]); };
+function tick(){
+  const c = $('flow'), ctx = c.getContext('2d'), dpr = devicePixelRatio||1, W = c.width = c.clientWidth*dpr, H = c.height = c.clientHeight*dpr, sx = W/1600, sy = H/1180;
+  ctx.clearRect(0,0,W,H);
+  if (reduced) return;
+  for (const k in PATHS){ const v = flows[k]; if (v > 0.05 && Math.random() < Math.min(.6, v*0.12)) particles.push({k, t: dir[k] > 0 ? 0 : 1, v:(0.003 + Math.min(v,6)*0.001)*dir[k], r: 1.8 + Math.min(v,6)*0.35}); }
+  for (let i = particles.length-1; i >= 0; i--){ const q = particles[i]; q.t += q.v; if (q.t < 0 || q.t > 1){ particles.splice(i,1); continue; }
+    const [x,y] = bez(PATHS[q.k], q.t), col = COLORS[q.k], f = Math.sin(q.t*Math.PI);
+    ctx.fillStyle = `rgba(${col.join(',')},${0.35*f})`; ctx.beginPath(); ctx.arc(x*sx, y*sy, q.r*2.4*dpr, 0, 7); ctx.fill();
+    ctx.fillStyle = `rgba(255,255,255,${0.95*f})`; ctx.beginPath(); ctx.arc(x*sx, y*sy, q.r*dpr, 0, 7); ctx.fill(); }
+  requestAnimationFrame(tick);
 }
 
-// ---------------------------------------------------------------- state and render
-let latest = {}, history = [], daily = {}, rooms = null, meters = null;
-const $ = id => document.getElementById(id);
-const showErr = msg => { $('errors').innerHTML = msg ? `<div class="err">${msg}</div>` : '' };
+// ================================================================ chart primitives in the Domus style
+function arcGauge(pct){ // tick marks around a 220 degree arc, glowing active segment
+  const cx=100, cy=100, R=84, a0=-200, a1=20, n=56; let out = '';
+  for (let i=0;i<=n;i++){ const a = (a0 + (a1-a0)*i/n)*Math.PI/180, on = pct != null && i/n <= pct/100, r1 = R-(on?10:4), r2 = R+(on?4:2);
+    out += `<line x1="${cx+Math.cos(a)*r1}" y1="${cy+Math.sin(a)*r1}" x2="${cx+Math.cos(a)*r2}" y2="${cy+Math.sin(a)*r2}" stroke="${on?'var(--accent)':'var(--ink3)'}" stroke-opacity="${on?1:.45}" stroke-width="${on?2.2:1.2}" stroke-linecap="round"/>`; }
+  if (pct != null){ const a = (a0 + (a1-a0)*pct/100)*Math.PI/180; out += `<circle cx="${cx+Math.cos(a)*(R-3)}" cy="${cy+Math.sin(a)*(R-3)}" r="4" fill="#fff" stroke="var(--accent)" stroke-width="2"/>`; }
+  return `<defs><filter id="glow"><feGaussianBlur stdDeviation="3"/></filter></defs><g filter="url(#glow)" opacity=".6">${out}</g>${out}`;
+}
+function stepChart(vals, labels, hi, dark=true){ // stepped dotted line with hatched highlight areas
+  const W=300, H=110, L=4, R=4, T=10, B=22, n = vals.length, ymax = Math.max(0.1, ...vals.filter(v => v != null));
+  const X = i => L + (W-L-R)*i/n, Y = v => T + (H-T-B)*(1 - (v||0)/ymax);
+  let path = '', dots = '', areas = '';
+  vals.forEach((v,i) => { const x0 = X(i), x1 = X(i+1), y = Y(v); path += `${i?'L':'M'}${x0} ${y} L${x1} ${y} `; dots += `<circle cx="${x0}" cy="${y}" r="2" fill="${dark?'#fff':'var(--ink)'}" opacity=".8"/>`;
+    if (hi && hi(i, v)) areas += `<rect x="${x0}" y="${y}" width="${x1-x0}" height="${H-B-y}" fill="url(#hatch)" opacity=".9"/><rect x="${x0}" y="${y}" width="${x1-x0}" height="${H-B-y}" fill="none" stroke="var(--accent)" stroke-opacity=".7"/>`; });
+  const lab = labels.map(([x,l]) => `<text x="${L + (W-L-R)*x}" y="${H-6}" text-anchor="middle">${l}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--accent)" stroke-width="2"/></pattern></defs>${areas}<path d="${path}" fill="none" stroke="${dark?'rgba(255,255,255,.55)':'var(--ink2)'}" stroke-width="1.2" stroke-dasharray="3 3"/>${dots}${lab}</svg>`;
+}
 
-function tod(){
-  const h = new Date().getHours();
-  return h >= 6 && h < 9 ? 'dawn' : h >= 9 && h < 17 ? 'day' : h >= 17 && h < 20 ? 'dusk' : 'night';
-}
-function setFlow(id, kw, reverse){
-  const el = $(id);
-  const on = kw != null && Math.abs(kw) > 0.05;
-  el.classList.toggle('off', !on);
-  el.style.strokeWidth = on ? Math.min(14, 4 + Math.abs(kw) * 1.8) : 4;
-  el.style.animationDuration = on ? Math.max(.35, 1.4 - Math.abs(kw) * .15) + 's' : '';
-  el.style.animationDirection = reverse ? 'reverse' : 'normal';
-}
+// ================================================================ state and render
+let latest = {}, history = [], daily = {}, rooms = null, meters = null, range = '24';
+const showErr = m => { $('errors').innerHTML = m ? `<div class="note">${m}</div>` : '' };
+const kw = v => v == null ? '–' : fmt(Math.abs(v),2) + ' kW';
 function renderNow(){
-  const t = tod(); $('scene').dataset.tod = t; $('house').setAttribute('href', `assets/house_${t}.png`);
-  $('sun').style.display = t === 'night' ? 'none' : ''; $('moon').style.display = t === 'night' ? '' : 'none';
-  const f = latest.fox || {};
-  const gridNet = (f.grid_kw || 0) - (f.feedin_kw || 0);          // positive = import
-  const batNet = (f.bat_charge_kw || 0) - (f.bat_discharge_kw || 0); // positive = charging
-  $('t-pv').textContent = kw(f.pv_kw);
-  $('t-load').textContent = kw(f.load_kw);
-  $('t-grid-l').textContent = gridNet >= 0 ? 'Netz, Bezug' : 'Netz, Einspeisung';
-  $('t-grid').textContent = kw(gridNet);
-  $('t-bat-l').textContent = f.soc != null ? `Batterie ${fmt(f.soc,0)} %` : 'Keller: Wechselrichter, Batterie';
-  $('t-bat').textContent = f.soc == null ? '–' : (batNet >= 0 ? 'lädt ' : 'entlädt ') + kw(batNet);
-  $('batbox').setAttribute('d', `M600 ${832 - (f.soc||0)*0.52} L622 ${844 - (f.soc||0)*0.52} L622 832 L600 820 Z`);
-  const hp = (latest.daikin || [])[0]?.points || {};
-  const cc = hp.climateControl || {}, dhw = hp.domesticHotWaterTank || hp.domesticHotWaterFlowThrough || {};
-  const modeDe = {heating:'heizt', cooling:'kühlt', auto:'Auto', off:'aus'};
-  $('t-hp-l').textContent = cc.outdoor_temp != null ? `Wärmepumpe, außen ${fmt(cc.outdoor_temp,1)} °C` : 'Wärmepumpe';
-  $('t-hp').textContent = cc.mode ? `${modeDe[cc.mode] || cc.mode}${cc.leaving_water_temp != null ? ', Vorlauf ' + fmt(cc.leaving_water_temp,0) + ' °C' : ''}` : (latest.daikin ? '–' : 'noch nicht verbunden');
-  setFlow('f-sun', f.pv_kw); setFlow('f-bat', batNet, batNet < 0); setFlow('f-grid', gridNet, gridNet < 0);
-  setFlow('f-heat', cc.on === 'on' && cc.mode !== 'off' ? 1 : 0);
+  const p = pickStill();
+  const h = new Date().getHours(), name = S.get('name','');
+  $('greet').textContent = (h < 5 ? 'Gute Nacht' : h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend') + (name ? `, ${name}` : '');
+  const f = latest.fox || {}, d = daily[today()] || {}, y = daily[new Date(Date.now()-86400e3).toLocaleDateString('sv-SE')] || {};
+  const gridNet = (f.grid_kw||0) - (f.feedin_kw||0), batNet = (f.bat_charge_kw||0) - (f.bat_discharge_kw||0);
+  const hp = (latest.daikin||[])[0]?.points || {}, cc = hp.climateControl || {}, dhw = hp.domesticHotWaterTank || hp.domesticHotWaterFlowThrough || {};
 
-  // today
-  const d = daily[new Date().toISOString().slice(0,10)] || {};
-  const gen = d.generation, feed = d.feedin, imp = d.gridConsumption, load = d.loads;
-  const self = gen != null && feed != null ? Math.max(0, gen - feed) : null;
-  const parts = [[self, 'var(--house)', 'selbst genutzt'], [feed, 'var(--sun)', 'eingespeist']];
-  const tot = (self||0) + (feed||0);
-  $('bar-today').innerHTML = tot ? parts.map(([v,c]) => `<i style="width:${(v||0)/tot*100}%;background:${c}"></i>`).join('') : '';
-  $('leg-today').innerHTML = parts.map(([v,c,l]) => `<span><b style="background:${c}"></b>${l} ${kwh(v)}</span>`).join('') + (imp != null ? `<span><b style="background:var(--grid)"></b>bezogen ${kwh(imp)}</span>` : '');
-  const autarkie = load ? Math.round(100 * Math.max(0, 1 - (imp||0)/load)) : null;
-  const kpis = [
-    ['Autarkie heute', autarkie == null ? '–' : fmt(autarkie,0), '%'],
-    ['Erzeugt heute', gen == null ? '–' : fmt(gen,1), 'kWh'],
-    ['Netzkosten heute', imp == null ? '–' : fmt(imp*price(),2), '€'],
-    ['Einspeisung heute', feed == null ? '–' : fmt(feed*feedTariff(),2), '€'],
-    ['Wärmepumpe heute', d.hp_heating == null && d.hp_dhw == null ? '–' : fmt((d.hp_heating||0)+(d.hp_dhw||0),1), 'kWh'],
-    ['Warmwasser', dhw.tank_temp == null ? '–' : fmt(dhw.tank_temp,0), '°C'],
-  ];
-  $('kpis').innerHTML = kpis.map(([k,v,u]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}<small>${u}</small></div></div>`).join('');
-  const upd = latest.updated ? new Date(latest.updated) : null;
-  $('upd').textContent = upd ? `Stand ${upd.toLocaleString('de-DE', {weekday:'short', hour:'2-digit', minute:'2-digit'})}` : 'keine Daten';
+  // pills
+  $('t-pv').textContent = kw(f.pv_kw); $('p-pv').classList.toggle('dim', !(f.pv_kw > 0.05));
+  $('t-load').textContent = kw(f.load_kw);
+  $('t-grid-l').textContent = gridNet >= 0 ? 'Bezug' : 'Einspeisung'; $('t-grid').textContent = kw(gridNet); $('p-grid').classList.toggle('dim', Math.abs(gridNet) < 0.05);
+  $('t-bat').textContent = f.soc == null ? '–' : `${fmt(f.soc,0)} %` + (Math.abs(batNet) > 0.05 ? (batNet > 0 ? ' · lädt' : ' · entlädt') : '');
+  const modeDe = {heating:'heizt', cooling:'kühlt', auto:'Automatik', off:'aus'};
+  $('t-hp').textContent = latest.daikin ? (modeDe[cc.mode] || cc.mode || '–') + (cc.outdoor_temp != null ? ` · ${fmt(cc.outdoor_temp,0)} °C` : '') : 'bald';
+  $('p-hp').classList.toggle('dim', !latest.daikin);
+  flows.sun = f.pv_kw||0; flows.bat = Math.abs(batNet); dir.bat = batNet >= 0 ? 1 : -1; flows.grid = Math.abs(gridNet); dir.grid = gridNet >= 0 ? -1 : 1; flows.heat = cc.on === 'on' && cc.mode !== 'off' ? 1 : 0;
+
+  // dark card: consumption today with stepped 24h chart
+  $('n-load').innerHTML = `${fmt(d.loads,1)}<small>kWh</small>`;
+  const delta = d.loads != null && y.loads ? Math.round((d.loads - y.loads)/y.loads*100) : null;
+  $('c-load').textContent = delta == null ? 'erster Tag' : `${delta > 0 ? '+' : ''}${delta} % vs gestern`; $('c-load').classList.toggle('neg', delta > 0);
+  const now = Date.now(), from = now - 24*3600e3, pts = history.filter(x => new Date(x.t) >= from), bins = 12;
+  const agg = key => { const a = Array(bins).fill(null), c = Array(bins).fill(0); pts.forEach(x => { const b = Math.min(bins-1, Math.floor((new Date(x.t)-from)/(24*3600e3)*bins)); if (x[key] != null){ a[b] = (a[b]||0) + x[key]; c[b]++; } }); return a.map((v,i) => v == null ? null : v/c[i]); };
+  const ld = agg('load_kw'), pv = agg('pv_kw');
+  const avg = ld.filter(v => v != null); const mean = avg.length ? avg.reduce((a,b)=>a+b,0)/avg.length : 0;
+  const hh = t => String(new Date(t).getHours()).padStart(2,'0') + ':00';
+  $('step-load').innerHTML = stepChart(ld, [[0,hh(from)],[.5,hh(from+12*3600e3)],[1,'jetzt']], (i,v) => v != null && v > mean*1.3);
+
+  // autarky arc
+  const aut = d.loads ? clamp(Math.round(100*(1 - (d.gridConsumption||0)/d.loads)), 0, 100) : null;
+  $('arc-svg').innerHTML = arcGauge(aut); $('a-aut').innerHTML = (aut == null ? '–' : aut) + '<small>%</small>';
+
+  // solar, cost
+  const self = d.generation != null && d.feedin != null ? Math.max(0, d.generation - d.feedin) : null;
+  $('m-gen').innerHTML = `${fmt(d.generation,1)}<small>kWh</small>`; $('s-gen').innerHTML = `<b>${fmt(self,1)}</b> kWh selbst genutzt, <b>${fmt(d.feedin,1)}</b> eingespeist`;
+  const cost = (d.gridConsumption||0)*price(), earn = (d.feedin||0)*feedT(), saved = (self||0)*price();
+  $('m-cost').innerHTML = `${fmt(cost-earn,2)}<small>€</small>`; $('s-cost').innerHTML = `<b>${fmt(d.gridConsumption,1)}</b> kWh Netz, <b>${fmt(saved,2)} €</b> gespart`;
+
+  // battery
+  $('r-soc').setAttribute('stroke-dasharray', `${(f.soc||0)/100*264} 264`); $('r-soc-t').textContent = f.soc == null ? '–' : fmt(f.soc,0) + ' %';
+  const kwhIn = f.soc != null ? f.soc/100*cap() : null;
+  $('m-bat').innerHTML = kwhIn == null ? '–' : `${fmt(kwhIn,1)}<small>von ${fmt(cap(),0)} kWh</small>`;
+  $('s-bat').textContent = batNet > 0.05 && kwhIn != null ? `lädt mit ${kw(batNet)}, voll in ca. ${fmt((cap()-kwhIn)/batNet,1)} h` : batNet < -0.05 && kwhIn != null ? `entlädt mit ${kw(batNet)}, reicht ca. ${fmt(Math.max(0,kwhIn-cap()*.1)/Math.abs(batNet),1)} h` : f.soc != null ? 'im Ruhezustand' : '–';
+  const toBat = d.chargeEnergyToTal||0, fromBat = d.dischargeEnergyToTal||0, direct = Math.max(0,(self||0)-toBat);
+  const segs = [[direct,'var(--sun)','direkt genutzt'],[fromBat,'var(--accent)','aus der Batterie'],[d.gridConsumption,'var(--grid)','aus dem Netz'],[d.feedin,'var(--heat)','eingespeist']], tot = segs.reduce((a,s)=>a+(s[0]||0),0);
+  $('stack').innerHTML = segs.map(s => `<i style="width:${tot?(s[0]||0)/tot*100:0}%;background:${s[1]}"></i>`).join('');
+  $('keys').innerHTML = segs.map(s => `<span style="--c:${s[1]}">${s[2]}<b>${fmt(s[0],1)}</b></span>`).join('');
+
+  // heat pump, 14 days
+  if (latest.daikin){ $('m-hp').innerHTML = `${fmt((d.hp_heating||0)+(d.hp_dhw||0),1)}<small>kWh heute</small>`; $('s-hp').innerHTML = `Vorlauf <b>${fmt(cc.leaving_water_temp,0)} °C</b>${dhw.tank_temp != null ? `, Warmwasser <b>${fmt(dhw.tank_temp,0)} °C</b>` : ''}`; }
+  else { $('m-hp').textContent = '–'; $('s-hp').textContent = 'Daikin wird verbunden, sobald der Zugang freigeschaltet ist'; }
+  const days = [...Array(14)].map((_,i) => new Date(now-(13-i)*86400e3).toLocaleDateString('sv-SE')), gens = days.map(dd => daily[dd]?.generation ?? null);
+  const gm = gens.filter(v => v != null); $('m-14').innerHTML = `${fmt(gm.length ? gm.reduce((a,b)=>a+b,0)/gm.length : null,1)}<small>kWh Ø Solar</small>`;
+  $('bars14').innerHTML = stepChart(gens.map(v => v ?? 0), [[0, days[0].slice(8,10)+'.'+days[0].slice(5,7)+'.'],[1,'heute']], (i,v) => i === 13, false);
+
+  // status
+  const upd = latest.updated ? new Date(latest.updated) : null, age = upd ? Math.round((now-upd)/60000) : null;
+  $('upd').textContent = upd ? (age < 1 ? 'gerade eben' : `vor ${age} Min`) : 'keine Daten'; $('upd').classList.toggle('stale', age == null || age > 25);
+  $('status').textContent = [upd ? `Stand ${upd.toLocaleString('de-DE',{weekday:'short', hour:'2-digit', minute:'2-digit'})}` : '', f.inv_temp != null ? `Wechselrichter ${fmt(f.inv_temp,0)} °C` : '', `${history.length} Messpunkte`, latest.daikin_quota?.['X-RateLimit-Remaining-day'] ? `Daikin ${latest.daikin_quota['X-RateLimit-Remaining-day']} von 200 Abrufen übrig` : ''].filter(Boolean).join(' · ');
   showErr((latest.errors||[]).join(' · '));
 }
 
-// ---------------------------------------------------------------- charts
-function lineChart(series, labels, unitRight){
-  // series: [{pts:[[x,y]...], color, area}], x in 0..1
-  const W=360, H=190, L=30, R=unitRight?30:10, T=14, B=24;
-  const ys = series.flatMap(s => s.pts.map(p => p[1])).filter(v => v != null);
-  const ymax = Math.max(1, ...ys) * 1.1;
-  const X = x => L + x*(W-L-R), Y = y => T + (H-T-B)*(1 - y/ymax);
-  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
-  for (let i=0;i<=3;i++){ const y = T + (H-T-B)*i/3; out += `<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-dasharray="2 4"/><text x="${L-4}" y="${y+3}" text-anchor="end">${fmt(ymax*(1-i/3),ymax>10?0:1)}</text>`; }
-  for (const s of series){
-    const p = s.pts.filter(q => q[1] != null);
-    if (!p.length) continue;
-    const path = p.map((q,i) => `${i?'L':'M'}${X(q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(' ');
-    if (s.area) out += `<path d="${path} L${X(p[p.length-1][0]).toFixed(1)} ${Y(0)} L${X(p[0][0]).toFixed(1)} ${Y(0)} Z" fill="${s.color}" fill-opacity=".25"/>`;
-    out += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2"/>`;
-  }
-  labels.forEach(([x,l]) => out += `<text x="${X(x)}" y="${H-8}" text-anchor="middle">${l}</text>`);
+// ================================================================ history
+function lineChart(series, labels, title, dark){
+  const W=330, H=190, L=28, R=8, T=14, B=24, ys = series.flatMap(s => s.pts.map(p => p[1])).filter(v => v != null), ymax = Math.max(1, ...ys)*1.1;
+  const X = x => L + x*(W-L-R), Y = y => T + (H-T-B)*(1 - y/ymax), tc = dark ? 'var(--on-dark2)' : 'var(--ink2)';
+  let out = `<div class="k">${title}</div><svg viewBox="0 0 ${W} ${H}" style="margin-top:8px">`;
+  for (let i=0;i<=3;i++){ const yy = T + (H-T-B)*i/3; out += `<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="${tc}" stroke-opacity=".25" stroke-dasharray="2 4"/><text x="${L-4}" y="${yy+3}" text-anchor="end" style="fill:${tc}">${fmt(ymax*(1-i/3),ymax>10?0:1)}</text>`; }
+  for (const s of series){ const p = s.pts.filter(q => q[1] != null); if (!p.length) continue; const path = p.map((q,i) => `${i?'L':'M'}${X(q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(' ');
+    if (s.area) out += `<path d="${path} L${X(p[p.length-1][0]).toFixed(1)} ${Y(0)} L${X(p[0][0]).toFixed(1)} ${Y(0)} Z" fill="${s.color}" fill-opacity=".18"/>`;
+    out += `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="1.6"/>`; }
+  labels.forEach(([x,l]) => out += `<text x="${X(x)}" y="${H-6}" text-anchor="middle" style="fill:${tc}">${l}</text>`);
+  return out + `</svg><div class="keys" style="margin-top:8px;${dark?'':'color:var(--ink2)'}">${series.map(s => `<span style="--c:${s.color}">${s.name}</span>`).join('')}</div>`;
+}
+function barChart(rows, title, dark){
+  const W=330, H=190, L=28, T=14, B=24, bw = (W-L-8)/rows.length, max = Math.max(1, ...rows.map(r => r.segs.reduce((a,s)=>a+(s[0]||0),0)))*1.1, tc = dark ? 'var(--on-dark2)' : 'var(--ink2)';
+  let out = `<div class="k">${title}</div><svg viewBox="0 0 ${W} ${H}" style="margin-top:8px">`;
+  for (let i=0;i<=3;i++){ const yy = T + (H-T-B)*i/3; out += `<line x1="${L}" x2="${W-8}" y1="${yy}" y2="${yy}" stroke="${tc}" stroke-opacity=".25" stroke-dasharray="2 4"/><text x="${L-4}" y="${yy+3}" text-anchor="end" style="fill:${tc}">${fmt(max*(1-i/3),0)}</text>`; }
+  rows.forEach((r,i) => { let yy = H-B; r.segs.forEach(([v,c]) => { const hgt = (v||0)/max*(H-T-B); out += `<rect x="${L+i*bw+1}" y="${yy-hgt}" width="${bw-2}" height="${hgt}" rx="2" fill="${c}"/>`; yy -= hgt; });
+    if (rows.length <= 14 || i % 5 === 0) out += `<text x="${L+i*bw+bw/2}" y="${H-6}" text-anchor="middle" style="fill:${tc}">${r.label}</text>`; });
   return out + '</svg>';
 }
-function barChart(rows){ // rows: [{label, segs:[[v,color]]}]
-  const W=360, H=200, L=30, T=14, B=26, bw = (W-L-10)/rows.length;
-  const max = Math.max(1, ...rows.map(r => r.segs.reduce((a,s)=>a+(s[0]||0),0))) * 1.1;
-  let out = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
-  rows.forEach((r,i) => {
-    let y = H-B;
-    r.segs.forEach(([v,c]) => { const h = (v||0)/max*(H-T-B); out += `<rect x="${L+i*bw+1}" y="${y-h}" width="${bw-2}" height="${h}" fill="${c}"/>`; y -= h; });
-    if (rows.length <= 14 || i % 5 === 0) out += `<text x="${L+i*bw+bw/2}" y="${H-8}" text-anchor="middle">${r.label}</text>`;
-  });
-  return out + '</svg>';
-}
-let range = '24';
 function renderDay(){
   if (range === 'month'){
-    const dates = Object.keys(daily).sort().slice(-31);
-    $('chart-main').innerHTML = `<div class="k" style="margin-bottom:6px">Erzeugung und Verbrauch pro Tag, kWh</div>` + barChart(dates.map(dte => ({label: dte.slice(8), segs: [[Math.max(0,(daily[dte].generation||0)-(daily[dte].feedin||0)),'var(--house)'],[daily[dte].feedin,'var(--sun)'],[daily[dte].gridConsumption,'var(--grid)']]})));
-    const sum = k => dates.reduce((a,dte)=>a+(daily[dte][k]||0),0);
-    $('day-stats').innerHTML = `<div class="legend" style="margin:0 0 10px"><span><b style="background:var(--house)"></b>selbst genutzt</span><span><b style="background:var(--sun)"></b>eingespeist</span><span><b style="background:var(--grid)"></b>Netzbezug</span></div>
-      <div class="grid2"><div class="card"><div class="k">Erzeugt</div><div class="v">${fmt(sum('generation'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzbezug</div><div class="v">${fmt(sum('gridConsumption'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzkosten</div><div class="v">${fmt(sum('gridConsumption')*price(),0)}<small>€</small></div></div><div class="card"><div class="k">Wärmepumpe</div><div class="v">${fmt(sum('hp_heating')+sum('hp_dhw'),0)}<small>kWh</small></div></div></div>`;
+    const dates = Object.keys(daily).sort().slice(-31), sum = k => dates.reduce((a,dd)=>a+(daily[dd][k]||0),0);
+    $('chart-main').innerHTML = barChart(dates.map(dd => ({label: dd.slice(8), segs:[[Math.max(0,(daily[dd].generation||0)-(daily[dd].feedin||0)),'var(--sun)'],[daily[dd].feedin,'var(--heat)'],[daily[dd].gridConsumption,'var(--grid)']]})), 'Pro Tag, kWh', true) + `<div class="keys" style="margin-top:8px"><span style="--c:var(--sun)">selbst genutzt</span><span style="--c:var(--heat)">eingespeist</span><span style="--c:var(--grid)">Netzbezug</span></div>`;
+    $('chart-2').innerHTML = barChart(dates.map(dd => ({label: dd.slice(8), segs:[[daily[dd].hp_heating,'var(--heat)'],[daily[dd].hp_dhw,'var(--accent)']]})), 'Wärmepumpe pro Tag, kWh', false) + `<div class="keys" style="margin-top:8px;color:var(--ink2)"><span style="--c:var(--heat)">Heizen</span><span style="--c:var(--accent)">Warmwasser</span></div>`;
+    $('day-stats').innerHTML = `<div class="grid g2"><div class="card"><div class="k">Erzeugt</div><div class="mid" style="margin-top:8px">${fmt(sum('generation'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzbezug</div><div class="mid" style="margin-top:8px">${fmt(sum('gridConsumption'),0)}<small>kWh</small></div></div><div class="card"><div class="k">Netzkosten</div><div class="mid" style="margin-top:8px">${fmt(sum('gridConsumption')*price(),0)}<small>€</small></div></div><div class="card"><div class="k">Autarkie</div><div class="mid" style="margin-top:8px">${sum('loads') ? fmt(100*(1-sum('gridConsumption')/sum('loads')),0) : '–'}<small>%</small></div></div></div>`;
     return;
   }
-  const hours = parseInt(range), now = Date.now(), from = now - hours*3600e3;
-  const pts = history.filter(h => new Date(h.t).getTime() >= from);
-  const x = h => (new Date(h.t).getTime()-from)/(hours*3600e3);
+  const hours = parseInt(range), now = Date.now(), from = now - hours*3600e3, pts = history.filter(h => new Date(h.t).getTime() >= from), x = h => (new Date(h.t).getTime()-from)/(hours*3600e3);
   const labels = hours === 24 ? [0,6,12,18,24].map(k => [k/24, new Date(from+k*3600e3).getHours()+' h']) : [0,1,2,3,4,5,6,7].map(k => [k/7, new Date(from+k*86400e3).toLocaleDateString('de-DE',{weekday:'short'})]);
-  $('chart-main').innerHTML = `<div class="k" style="margin-bottom:6px">Leistung, kW</div>` + lineChart([
-    {pts: pts.map(h => [x(h), h.pv_kw]), color:'var(--sun)', area:true},
-    {pts: pts.map(h => [x(h), h.load_kw]), color:'var(--house)'},
-    {pts: pts.map(h => [x(h), (h.grid_kw||0)-(h.feedin_kw||0) > 0 ? h.grid_kw : null]), color:'var(--grid)'},
-  ], labels) + `<div class="legend"><span><b style="background:var(--sun)"></b>Solar</span><span><b style="background:var(--house)"></b>Haus</span><span><b style="background:var(--grid)"></b>Netzbezug</span></div>`;
-  $('day-stats').innerHTML = `<div class="k" style="margin-bottom:6px">Batterie, %</div>` + lineChart([{pts: pts.map(h => [x(h), h.soc]), color:'var(--bat)', area:true}], labels) + (pts.length ? '' : '<div class="hint">Noch keine Verlaufsdaten in diesem Zeitraum.</div>');
+  $('chart-main').innerHTML = lineChart([{name:'Solar', pts: pts.map(h => [x(h), h.pv_kw]), color:'var(--sun)', area:true},{name:'Haus', pts: pts.map(h => [x(h), h.load_kw]), color:'#fff'},{name:'Netzbezug', pts: pts.map(h => [x(h), ((h.grid_kw||0)-(h.feedin_kw||0)) > 0 ? h.grid_kw : 0]), color:'var(--grid)'}], labels, 'Leistung, kW', true);
+  $('chart-2').innerHTML = lineChart([{name:'Ladestand', pts: pts.map(h => [x(h), h.soc]), color:'var(--accent)', area:true}], labels, 'Batterie, %', false) + (pts.length ? '' : '<div class="hint">Noch keine Verlaufsdaten in diesem Zeitraum.</div>');
+  $('day-stats').innerHTML = '';
 }
-function spark(vals, color){
-  const v = vals.filter(x => x != null); if (v.length < 2) return '';
-  const min = Math.min(...v), max = Math.max(...v), rng = (max-min)||1;
-  const d = vals.map((y,i) => y == null ? '' : `${i?'L':'M'}${(i/(vals.length-1)*70).toFixed(1)} ${(24 - (y-min)/rng*22).toFixed(1)}`).join(' ');
-  return `<svg viewBox="0 0 70 26"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
-}
+function spark(vals, color){ const v = vals.filter(x => x != null); if (v.length < 2) return ''; const min = Math.min(...v), max = Math.max(...v), rng = (max-min)||1;
+  const d = vals.map((y,i) => y == null ? '' : `${i?'L':'M'}${(i/(vals.length-1)*72).toFixed(1)} ${(26-(y-min)/rng*22).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 72 28"><path d="${d}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`; }
 function renderRooms(){
   if (!rooms || !Object.keys(rooms.latest||{}).length) return;
-  const names = Object.keys(rooms.latest).sort((a,b) => a.localeCompare(b,'de'));
-  const hist = (rooms.history||[]).slice(-48);
-  $('rooms-list').innerHTML = names.map(n => { const r = rooms.latest[n];
-    return `<div class="room"><div><h3>${n}</h3><p>${new Date(r.updated).toLocaleString('de-DE',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</p></div>${spark(hist.map(s => (s.r[n]||[])[0]), 'var(--heat)')}<div class="vals">${fmt(r.t,1)} °C<br><small>${fmt(r.h,0)} % rF</small></div></div>`; }).join('');
+  const names = Object.keys(rooms.latest).sort((a,b) => a.localeCompare(b,'de')), hist = (rooms.history||[]).slice(-48);
+  $('rooms-list').innerHTML = names.map(n => { const r = rooms.latest[n]; return `<div class="row"><div><h3>${n}</h3><p>${new Date(r.updated).toLocaleString('de-DE',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</p></div>${spark(hist.map(s => (s.r[n]||[])[0]), 'var(--heat)')}<div class="v">${fmt(r.t,1)} °C<br><small>${fmt(r.h,0)} % rF</small></div></div>`; }).join('');
 }
 function renderMeter(){
-  const rd = (meters?.readings||[]);
-  $('meter-list').innerHTML = rd.length ? `<div class="k" style="margin-bottom:6px">Erfasste Zählerstände</div>` + rd.slice().reverse().map(e => `<div class="room"><div><h3>${new Date(e.t).toLocaleDateString('de-DE')}</h3><p>${e.note||''}</p></div><div class="vals" style="font-size:.9rem">Bezug ${fmt(e.household,0)}<br><small>Einsp. ${fmt(e.export,0)} · WP ${fmt(e.heatpump,0)}</small></div></div>`).join('') : '<div class="hint">Noch keine Zählerstände erfasst.</div>';
+  const rd = meters?.readings || [];
+  $('meter-list').innerHTML = rd.length ? `<div class="k">Erfasste Zählerstände</div>` + rd.slice().reverse().map(e => `<div class="row" style="grid-template-columns:1fr auto"><div><h3>${new Date(e.t).toLocaleDateString('de-DE')}</h3><p>${e.note||''}</p></div><div class="v" style="font-size:1rem">Bezug ${fmt(e.household,0)}<br><small>Einsp. ${fmt(e.export,0)} · WP ${fmt(e.heatpump,0)}</small></div></div>`).join('') : '<div class="hint">Noch keine Zählerstände erfasst.</div>';
   const last = rd[rd.length-1];
-  if (!last){ $('meter-est').innerHTML = '<div class="k">Schätzung</div><div class="hint">Trag einen ersten Zählerstand ein, dann rechnet die App die Zähler zwischen deinen Ablesungen virtuell weiter.</div>'; return; }
-  const since = Object.keys(daily).filter(dte => dte > last.t);
-  const sum = k => since.reduce((a,dte)=>a+(daily[dte][k]||0),0);
-  const estH = last.household != null ? last.household + sum('gridConsumption') : null;
-  const estE = last.export != null ? last.export + sum('feedin') : null;
-  const estP = last.heatpump != null ? last.heatpump + sum('hp_heating') + sum('hp_dhw') : null;
-  $('meter-est').innerHTML = `<div class="k">Geschätzter Stand heute, zuletzt bestätigt am ${new Date(last.t).toLocaleDateString('de-DE')}</div>
-    <div class="grid2" style="margin-top:8px"><div class="card"><div class="k">Bezug</div><div class="v">${fmt(estH,0)}<small>kWh</small></div></div><div class="card"><div class="k">Einspeisung</div><div class="v">${fmt(estE,0)}<small>kWh</small></div></div><div class="card"><div class="k">Wärmepumpe</div><div class="v">${fmt(estP,0)}<small>kWh</small></div></div><div class="card"><div class="k">Seit Ablesung</div><div class="v">${fmt(sum('gridConsumption')*price(),0)}<small>€ Netz</small></div></div></div>
-    <div class="hint" style="margin-top:8px">Die Schätzung nutzt die Fox Tageswerte (Bezug, Einspeisung) und die Daikin Verbrauchsdaten. Mit jeder Ablesung siehst du, wie genau sie war.</div>`;
-  if (!$('m-house').value && estH) { $('m-house').placeholder = fmt(estH,0); $('m-export').placeholder = fmt(estE,0); $('m-hp').placeholder = fmt(estP,0); }
+  if (!last){ $('meter-est').innerHTML = '<div class="k">Virtueller Zähler</div><div class="sub" style="margin-top:8px">Trag einen ersten Zählerstand ein. Danach rechnet die App die Zähler zwischen deinen Ablesungen weiter und zeigt bei jeder Ablesung, wie genau sie lag.</div>'; return; }
+  const since = Object.keys(daily).filter(dd => dd > last.t), sum = k => since.reduce((a,dd)=>a+(daily[dd][k]||0),0);
+  const estH = last.household != null ? last.household + sum('gridConsumption') : null, estE = last.export != null ? last.export + sum('feedin') : null, estP = last.heatpump != null ? last.heatpump + sum('hp_heating') + sum('hp_dhw') : null;
+  $('meter-est').innerHTML = `<div class="k">Virtueller Zähler, bestätigt am ${new Date(last.t).toLocaleDateString('de-DE')}</div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);margin-top:12px"><div><div class="mid">${fmt(estH,0)}</div><div class="sub">Bezug</div></div><div><div class="mid">${fmt(estE,0)}</div><div class="sub">Einspeisung</div></div><div><div class="mid">${fmt(estP,0)}</div><div class="sub">Wärmepumpe</div></div></div>
+    <div class="sub" style="margin-top:12px">Seit der Ablesung <b>${fmt(sum('gridConsumption'),0)} kWh</b> bezogen, etwa <b>${fmt(sum('gridConsumption')*price(),0)} €</b>.</div>`;
+  if (estH) { $('m-house').placeholder = fmt(estH,0); $('m-export').placeholder = fmt(estE,0); $('m-hp').placeholder = fmt(estP,0); }
 }
 
-// ---------------------------------------------------------------- GitHub actions from the page
+// ================================================================ GitHub
 async function gh(path, body){
   const repo = S.get('repo', defaultRepo), tok = S.get('token');
   if (!repo || !tok) throw new Error('Repository und GitHub Token in den Einstellungen eintragen.');
   const r = await fetch(`https://api.github.com/repos/${repo}${path}`, {method:'POST', headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if (!r.ok) throw new Error(`GitHub ${r.status}: ${(await r.text()).slice(0,120)}`);
+  if (!r.ok) throw new Error(`GitHub antwortet ${r.status}: ${(await r.text()).slice(0,120)}`);
 }
-$('refresh').addEventListener('click', async () => {
-  const b = $('refresh'); b.disabled = true; b.textContent = 'Hole Daten …';
-  try { await gh('/actions/workflows/collect.yml/dispatches', {ref:'main'}); b.textContent = 'Läuft, in ca. 1 Minute neu laden'; setTimeout(loadAll, 75000); }
-  catch(e){ showErr(e.message); b.textContent = 'Jetzt aktualisieren'; b.disabled = false; }
-});
-$('m-save').addEventListener('click', async () => {
-  const p = id => $(id).value.trim().replace(',','.');
-  try {
-    await gh('/dispatches', {event_type:'meter', client_payload:{date: $('m-date').value || new Date().toISOString().slice(0,10), household: p('m-house')||null, export: p('m-export')||null, heatpump: p('m-hp')||null, note: $('m-note').value}});
-    $('m-msg').textContent = 'Gespeichert, erscheint in etwa einer Minute.'; setTimeout(loadAll, 70000);
-  } catch(e){ $('m-msg').textContent = e.message; }
-});
+$('refresh').addEventListener('click', async () => { const b = $('refresh'); b.disabled = true; b.textContent = 'Hole Daten …';
+  try { await gh('/actions/workflows/collect.yml/dispatches', {ref:'main'}); b.textContent = 'Läuft, lade in 75 s neu'; setTimeout(loadAll, 75000); } catch(e){ showErr(e.message); b.textContent = 'Jetzt aktualisieren'; b.disabled = false; } });
+$('m-save').addEventListener('click', async () => { const p = id => $(id).value.trim().replace(',','.');
+  try { await gh('/dispatches', {event_type:'meter', client_payload:{date: $('m-date').value || today(), household: p('m-house')||null, export: p('m-export')||null, heatpump: p('m-hp')||null, note: $('m-note').value}}); $('m-msg').textContent = 'Gespeichert, erscheint in etwa einer Minute.'; setTimeout(loadAll, 70000); } catch(e){ $('m-msg').textContent = e.message; } });
 
-// ---------------------------------------------------------------- settings modal and navigation
-function openSettings(){ $('s-pass').value = S.get('pass'); $('s-repo').value = S.get('repo', defaultRepo); $('s-token').value = S.get('token'); $('s-price').value = S.get('price','0,31'); $('s-feed').value = S.get('feed','0,08'); $('modal').classList.add('open'); }
-$('settings').addEventListener('click', openSettings);
-$('s-close').addEventListener('click', () => $('modal').classList.remove('open'));
-$('s-save').addEventListener('click', () => { S.set('pass', $('s-pass').value); S.set('repo', $('s-repo').value.trim()); S.set('token', $('s-token').value.trim()); S.set('price', $('s-price').value); S.set('feed', $('s-feed').value); $('modal').classList.remove('open'); loadAll(); });
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
-  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === b.dataset.v));
-  S.set('tab', b.dataset.v);
-}));
+// ================================================================ settings, nav, boot
+const KEYS = ['pass','repo','token','price','feed','cap','name','geo'], DEF = {repo: defaultRepo, price:'0,31', feed:'0,08', cap:'10', geo:'51.22, 6.78'};
+function openSettings(){ KEYS.forEach(k => $('s-'+k).value = S.get(k, DEF[k]||'')); $('modal').classList.add('open'); }
+$('settings').addEventListener('click', openSettings); $('s-close').addEventListener('click', () => $('modal').classList.remove('open'));
+$('s-save').addEventListener('click', () => { KEYS.forEach(k => S.set(k, $('s-'+k).value.trim())); $('modal').classList.remove('open'); loadAll(); });
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x===b)); document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === b.dataset.v)); S.set('tab', b.dataset.v); scrollTo(0,0); }));
 $('range').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { $('range').querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b)); range = b.dataset.r; renderDay(); }));
-$('m-date').value = new Date().toISOString().slice(0,10);
-
+$('m-date').value = today();
 async function loadAll(){
   if (!S.get('pass')) { showErr('Bitte zuerst die Passphrase in den Einstellungen eintragen.'); openSettings(); return; }
-  try {
-    const [l, h, d, r, m] = await Promise.all([loadEnc('latest'), loadEnc('history'), loadEnc('daily'), loadEnc('rooms'), loadEnc('meters')]);
-    latest = l || {}; history = h || []; daily = d || {}; rooms = r; meters = m;
-    showErr(l ? '' : 'Noch keine Daten im Repository. Der erste Lauf des Workflows legt sie an.');
-  } catch(e) { showErr('Daten konnten nicht entschlüsselt werden. Stimmt die Passphrase?'); return; }
-  renderNow(); renderDay(); renderRooms(); renderMeter();
-  $('refresh').disabled = false; $('refresh').textContent = 'Jetzt aktualisieren';
+  try { const [l, h, d, r, m] = await Promise.all([loadEnc('latest'), loadEnc('history'), loadEnc('daily'), loadEnc('rooms'), loadEnc('meters')]); latest = l||{}; history = h||[]; daily = d||{}; rooms = r; meters = m; showErr(l ? '' : 'Noch keine Daten im Repository. Der erste Lauf des Workflows legt sie an.'); }
+  catch(e) { showErr('Daten konnten nicht entschlüsselt werden. Stimmt die Passphrase?'); return; }
+  renderNow(); renderDay(); renderRooms(); renderMeter(); $('refresh').disabled = false; $('refresh').textContent = 'Jetzt aktualisieren';
 }
 const t0 = S.get('tab'); if (t0) document.querySelector(`nav button[data-v="${t0}"]`)?.click();
-loadAll();
+pickStill(); tick(); loadAll();
+setInterval(pickStill, 60000); setInterval(loadAll, 10*60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadAll(); });
 </script>
 </body>
 </html>
